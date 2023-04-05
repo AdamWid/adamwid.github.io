@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script type="text/javascript" src="js/main.js"></script>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio</title>
+    <link rel="icon" type="image/x-icon" href="content/icons/favicon.ico">
+    <link rel="stylesheet" href="style.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
+</head>
+<body onload="Init()">
+    <!-- header design -->
+    <header>
+        <a href="#home" class="logo">Adam Rohdin</a>
+        <ul class="navlist">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#projects">Projects</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+        <div class="bx bx-menu" id="menu-icon">
+
+        </div>
+    </header>
+    <span id="home"></span>
+    <!-- home section design -->
+    <!-- <section class="home" id="home">
+        hello this is a section
+    </section> -->
+    <section class="projects" id="projects">
+        <div class="main-text">
+
+            <h1>This website is a work in progress!</h1>
+
+            <p>Portfolio</p>
+            <h2>What i've done</h2>
+        </div>
+        <div class="projects-content grid-parent">
+
+            <!-- entity component system -->
+            <div class="project-showcase" onclick="loadPage('projects/ecs.html')">
+                <div class="project-image">
+                    <img src="https://docs.unity3d.com/Packages/com.unity.entities@0.51/manual/images/ECSBlockDiagram.png" alt="ecs">
+                </div>
+                <div class="project-text">
+                    <h5>Entity component system</h5>
+                    <p class="pa">an entity component system implementation</p>
+                </div>
+                <a href="projects/ecs.html" class="boxlink">Read more</a>
+            </div>
+
+            <!-- reflection system -->
+            <div class="project-showcase" onclick="loadPage('projects/reflection.html')">
+                <div class="project-image">
+                    <img src="content/reflection.png" alt="reflection">
+                </div>
+                
+                <div class="project-text">
+                    <h5>C++ Reflection</h5>
+                    <p class="pa">a reflection system used in gaining a run-time insight into objects</p>
+                </div>
+                <a href="projects/reflection.html" class="boxlink">Read more</a>
+            </div>
+
+            <!-- visual performance profiler -->
+            <div class="project-showcase" onclick="loadPage('projects/profiler.html')">
+                <div class="project-image">
+                    <img src="content/profiler.png" alt="profiler">
+                </div>
+                <div class="project-text">
+                    <h5>performance profiler</h5>
+                    <p class="pa">
+                        a real-time visual performance profiler used to profile and visualize the flow of execution
+                    </p>
+                </div>
+                <a href="projects/profiler.html" class="boxlink">Read more</a>
+            </div>
+
+            <!-- node based visual scripting -->
+            <div class="project-showcase" onclick="loadPage('projects/scripting.html')">
+                <div class="project-image">
+                    <img src="content/scripting.png" alt="profiler">
+                </div>
+                <div class="project-text">
+                    <h5>Node based visual scripting</h5>
+                    <p class="pa">
+                       a scripting system used to bring our games to life
+                    </p>
+                   
+                </div>
+                <a href="projects/scripting.html" class="boxlink">Read more</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="group-projects">
+
+        <!-- MIME//SCAPE -->
+        <div class="grid-parent"> 
+            <div class="left">
+                <img src="content/mime-scape/mockup_v2.jpg" alt="spite">
+            </div>
+
+            <div class="right">
+                <h1> MIME//SCAPE </h1>
+                <p class="pa">
+                    First person platform shooter inspired by games like doom and roboquest
+                    Made in our own game engine during 12 weeks.
+                </p>
+                <h2>Contributions</h2>
+                <ul>
+                    <li> Visual scripting system </li>
+                    <li> Reflection system </li>
+                    <li> Game savestate </li>
+                </ul>
+            </div>
+        </div>
+        
+        <hr>
+
+        <!-- spite -->
+        <div class="grid-parent"> 
+            <div class="left">
+                <h1> Spite: Through The Veil </h1>
+
+                <p class="pa">
+                    spite was inspired by diablo
+
+                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Nisi ex temporibus,
+                    quo itaque alias quod laborum corporis ut doloribus! Dolorum excepturi cum
+                    ratione voluptas perferendis veritatis deserunt in dolores quaerat?
+                </p>
+               
+
+                <h2>Contributions</h2>
+                <ul>
+                    <li> Entity component system implementation </li>
+                    <li> Thread pool / Job system </li>
+                    <li> Multi-threaded animation system with support for blending </li>
+                    <li> Multi-threaded particle system </li>
+                    <li> Custom binary model format with multi-threaded importing </li>
+                    <li> Instanced rendering for all opaque non-animated objects</li>
+                    <li> PFC-Filtered shadows for point, spot and directional lights </li>
+                    <li> Fast transform hierarchy </li>
+                </ul>
+            </div>
+
+            <div class="right" style="height: 100%">
+                <div class="slides" style="height: 100%"> 
+                    <div class="slide">
+                        <img src="content/spite/screenshot01.png" alt="spite">
+                    </div>
+                    <div class="slide">
+                        <img src="content/spite/screenshot03.png" alt="spite">
+                    </div>
+                    <div class="slide">
+                        <img src="content/spite/screenshot02.png" alt="spite">
+                    </div>
+                    <div class="slide">
+                        <img src="content/spite/screenshot04.png" alt="spite">
+                    </div>
+                    <a class="prev" onclick="nextSlide(this, -1)"><i class='bx bx-chevron-left'></i></a>
+                    <a class="next" onclick="nextSlide(this, 1)"><i class='bx bx-chevron-right'></i></a>
+                </div>
+                
+            </div>
+        </div>
+       
+    </section>
+
+    <section class="about" id="about">
+        <div>
+            
+            this is some about me stuff
+        </div>
+    </section>
+</body>
+</html>

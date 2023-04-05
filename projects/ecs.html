@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio</title>
+    <link rel="icon" type="image/x-icon" href="../content/icons/favicon.ico">
+    <link rel="stylesheet" href="../style.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
+    <link rel="stylesheet" href="../external/styles/base16/onedark.min.css">
+    <script src="../external/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+
+</head>
+<body>
+    <!-- header design -->
+    <header>
+        <a href="../index.html" class="logo">Adam Rohdin</a>
+        <ul class="navlist">
+            <li><a href="../index.html#home">Home</a></li>
+            <li><a href="../index.html#projects">Projects</a></li>
+            <li><a href="../index.html#about">About</a></li>
+            <li><a href="../index.html#contact">Contact</a></li>
+        </ul>
+        <div class="bx bx-menu" id="menu-icon"></div>
+    </header>
+
+    <section class="article">
+            
+        <div class="container">
+
+            <!-- design & my list of requirements -->
+
+            <!-- internal storage and patterns - type id -->
+            
+            <!-- get method -->
+
+            <!-- the view -->
+
+            <!-- final thoughts and improvements -->
+            
+            <h1>Entity component system</h1>
+
+             <!-- why i wanted to make a entity component system -->
+            <p class="pa">
+                While working on game project 4 and 5, I had made a component system that we were using. 
+                This component system was easy to work in and translated very well to how Unity works 
+                which was useful as we used Unity as a level editor. but had some limitations I wanted to solve
+                going into project 6 when we were building our own game engine.
+                Some limitations I wanted to solve included:
+                <ul>
+                    <li>
+                    All components having behavior implemented through virtual functions,
+                    even when the component had no logic attached to it
+                    </li>
+                    <li>All components needing to be allocated separatly, increasing memory segmentation & cache misses</li>
+                    <li>No easy way to iterate all objects with a specific component, for example a MeshComponent for rendering</li>
+                </ul>                
+            </p>
+
+            <!-- what a entity component system is and how it solves the presented problems -->
+            <p class="pa">
+                Entity component systems seemed to be the most appropriate solution to these concerns,
+                They work similarly to components systems in the way that behaviour is defined at runtime with components.
+                But instead of defining behaviour with virtual functions, you iterate through
+                a whole array of components in a system doing the work you want.
+            </p>
+
+            <!-- entity component system benefits -->
+            <div>
+                <h2> Benefits of entity component systems </h2>
+                <p class="pa">
+                    Entity component systems offer several benefits over
+                    other models such as object oriented design,
+                    one main benefit is the concept of composition instead of inheritance. 
+                    Instead of having to keep track of a potentially deep and complex 
+                    inheritance hierarchy which could lead to expensive refactors,
+                    it is possible to separate behavior into components which can be removed and added
+                    to an entity at any time.
+                </p>
+
+                <div class="grid-parent">
+                    <p class="pa">
+                        Another main benefit is performance, 
+                        imagine a scenario where you want to iterate all objects and move 
+                        them according to some velocity.
+                        if all data related to the position of an object lived in contiguous 
+                        memory you could make much better use of the cpu cache and your memory bandwidth.  
+                    </p>
+                    <div>
+                        <pre>
+                            <h4 style="margin-bottom: 0; padding-bottom: 0;" class="colored">Example memory layout in a data oriented game</h4>
+                            <code class="language-cpp">
+                            class Foo
+                            {
+                                Vector3 position;
+                                Vector3 rotation;
+                                Vector3 scale;
+                            };
+                            </code>
+                        </pre>
+                    </div>
+                </div>
+                
+                <div class="grid-parent">
+                    <p class="pa">
+                        when fetching the memory for the position in class Bar, a cache-line worth of memory
+                        after it would get loaded as well instead of the position of the next object we want to manipulate. 
+                        terribly wasteful.
+                    </p>
+    
+                    <pre>
+                        <h4 style="margin-bottom: 0; padding-bottom: 0;" class="colored">Example memory layout in a object-oriented game</h4>
+                        <code class="language-cpp">
+                        class Bar
+                        {
+                            Vector3 position;
+                            Vector3 rotation;
+                            Vector3 scale;
+    
+                            // unrelated data
+                            Color color;
+                            Texture texture;
+                            Model model;
+                            float health;
+                            float damage;
+                            ... more
+                        };
+                        </code>
+                    </pre>
+                </div>
+
+                
+
+
+            
+            <h2>Design</h2>
+            <p class="pa">
+                I was unsure how I wanted the interface to look, so I decided to look around at existing entity component systems,
+                and after some research I found <a class="link" href="https://github.com/skypjack/entt">entt</a>. 
+                Since I really liked the interface and features <i>entt</i> provided and I thought
+                it would be a good challenge, I set out to replicate its features as best I could.
+
+            </p>
+
+            <h3> Entities </h3>
+
+            <pre>
+                <code class="language-cpp">
+                    using Entity = uint32_t;
+                    constexpr Entity nullentity = 0xffffffff;
+
+                    Entity Create()
+                    {
+                        return (myFreeEntities.Size()) ? myFreeEntities.Dequeue() : myNext++;
+                    }
+
+                    void Destroy(Entity aEntity)
+                    {
+                        for (uint32_t i = 0; i &lt; myContainers.Size(); ++i)
+                            myContainers[i]->Destroy(aEntity);
+                        
+                        myEntityQueue.Enqueue(aEntity);
+                    }
+                </code>
+            </pre>
+            <p class="pa">
+                Entities are implemented as a simple ID, 
+                destroyed entities are stored in a binary heap, 
+                making creating a new entity O(log N) where N is the number of previously destroyed entities. 
+                this is done to ensure we always use the smallest possible entity ID's we can.
+            </p>
+            
+
+            <h3> Components </h3>
+
+            <p class="pa">
+                Components are any templated type you want,
+                They are stored internally in a templated class called <span class="colored">Container</span>.
+                <span class="colored">Container</span> always keeps components aligned in an internal array, this is done
+                by using a sparse and dense array that maps entity ID's to the dense component array.
+            </p>
+
+            <pre>
+                <code class="language-cpp">
+                    template &lt;typename... Args&gt;
+                    T& Emplace(Entity aEntity, Args&&... args)
+                    {
+                        assert(!Contains(aEntity) && "Component already exists");
+                        Grow(aEntity);
+                        myDense[size] = aEntity;
+                        mySparse[aEntity] = size++;
+                        myComponents.emplace_back(std::forward&lt;Args&gt;(args)...);
+
+                        return myComponents[size-1];
+                    }
+
+                    void Remove(Entity aEntity)
+                    {
+                        assert(Contains(aEntity) && "Removing nonexisting Component");
+                        Entity denseIndex = sparse[aEntity];
+                    
+                        --size;
+                        std::swap(myComponents.back(), myComponents[denseIndex]);
+                        std::swap(myDense[size], myDense[denseIndex]);
+                        mySparse[myDense[denseIndex]] = denseIndex;
+                    
+                        auto tmp = std::move(mirror.back());
+                        myComponents.pop_back();
+                    }
+                </code>
+            </pre>
+            
+            <h3> Iterating through entities </h3>
+            <p class="pa">
+                In <span class="colored"><i>entt</i></span> there is a concept of a <span class="colored"><i>view</i></span> 
+                this was probably one of the more tricky features to implement.
+                Views are a way to specify a variadic list of component types and iterate through all entities that own that set of components.
+                views can also be given a variadic list of <span class="colored"><i>excludes</i></span> that stops the view from 
+                returning any entity which has any component that is excluded.
+            </p>
+            <pre>
+                <code class="language-cpp">
+                    template &lt;typename T1, typename... Types, typename... Excludes&gt;
+                    TypeView&lt;TList&lt;T1, Types...&gt;, TList&lt;Excludes...&gt;&gt; View(ecs::Exclude&lt;Excludes...&gt;)
+                    {
+                        auto c = GetContainer&lt;T1&gt;();
+                        return { std::make_tuple(c, GetContainer&lt;Types&gt;()...), std::make_tuple(GetContainer&lt;Excludes&gt;()...) };
+                    }
+                </code>
+            </pre>
+            <p class="pa">
+                The view's iterator works by finding the smallest container in the list, 
+                iterating that container's entities and testing the other containers 
+                in the list if they contain the current entity too. If they do we can return the entity as a valid entity.
+            </p>
+            <p class="pa">
+                Below is an example usage how a view is used in our engine to couple physx colliders with our collider-components.
+                This example showcases the second iterator that uses structured bindings with an <span class="colored"><i>std::tuple</i></span>
+            </p>
+            <pre>
+                <code class="language-cpp">
+                    auto view = myRegistry.View&lt;mys::Transform, mys::Collider&gt;(ecs::Exclude&lt;mys::Rigidbody&gt;());
+	            for (auto&amp;&amp; [entity, transform, collider] : view.Each()) // using structured bindings
+	            {
+	            	if(!collider.IsSleeping())
+	            		collider.SetTransform(transform);
+	            }
+                </code>
+            </pre>
+
+            <h2> That's it! </h2>
+            <p class="pa">
+                I'm overall very pleased with how the system turned out, and has been used to a great extent in our engine.
+                There are a lot of details omitted here but i have included the source code for those interested. (Doesn't compile without some modification).
+            </p>
+            <a class="link" href="https://github.com/adamwid/ecs">Source</a>
+        </div>
+
+    </section>
+
+    <script type="text/javascript" src="../js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Portfolio</title>
+        <link rel="icon" type="image/x-icon" href="../content/icons/favicon.ico">
+        <link rel="stylesheet" href="../style.css">
+        <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+        
+        <link rel="stylesheet" href="../external/styles/base16/onedark.min.css">
+        <script src="../external/highlight.min.js"></script>
+        <script>hljs.highlightAll();</script>
+    
+    </head>
+<body>
+    <!-- header design -->
+    <header>
+        <a href="../index.html" class="logo">Adam Rohdin</a>
+        <ul class="navlist">
+            <li><a href="../index.html#home">Home</a></li>
+            <li><a href="../index.html#projects">Projects</a></li>
+            <li><a href="../index.html#about">About</a></li>
+            <li><a href="../index.html#contact">Contact</a></li>
+        </ul>
+        <div class="bx bx-menu" id="menu-icon"></div>
+    </header>
+
+    <section class="content" id="content">
+        <div class="container">
+            <p class="pa">
+                During game project 7 we had a need to view and edit components from our editor, 
+                and since we ideally wanted to keep our editor/game projects separated which meant no component-specific code, 
+                I was tasked with making a reflection system.
+            </p>
+
+            <p class="pa">
+                Before starting I made a list of requirements:
+            </p>
+            <ul>
+                <li> No extra data stored on components, copying and moving components had to remain fast. </li>
+                <li> No type specific editing code needed, all types had to recursivly render </li>
+                <li> Support for common stl-container like <span class="colored">vector</span> and <span class="colored">unordered_map</span> </li>
+            </ul>
+            <p class="pa">
+                With the first requirement in mind, I decided on creating a registry where you register a type's members once,
+                with an interface for querying the type's members later
+            </p>
+        </div>
+    </section>
+
+    <script type="text/javascript" src="../js/main.js"></script>
+</body>
+</html>
