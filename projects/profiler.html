@@ -43,9 +43,15 @@
                         and where time is being spent in your game, especially if it's running on multiple threads.
                         That's why I wanted to make a tool to measure performance in our engine.
                     </p>
+                    <ul>
+                        <li> <a class="link" href="#collecting-data">Collecting data</a></li>
+                        <li> <a class="link" href="#the-macro">Usage & Macros </a></li>
+                        <li> <a class="link" href="#thread-safety">Thread safety</a></li>
+                    </ul>
                 </div>
             </div>
             
+            <a class="anchor" id="collecting-data"></a>
             <h3> Collecting data </h3>
 
             <p class="pa">
@@ -117,7 +123,8 @@
                 </div>
             </div>
 
-            <h3> The macro</h3>
+            <a class="anchor" id="the-macro"></a>
+            <h3> The macro </h3>
             <p class="pa">
                 I decided to utilize a macro to generate
                 information like a unique name, the current function name and line numbers for the object.
@@ -145,7 +152,8 @@
                 </code>
             </pre>
 
-            <h3> Thread safety </h3>
+            <a class="anchor" id="thread-safety"></a>
+            <h3 > Thread safety </h3>
             <p class="pa">
                 One of the goals of the profiler was to allow you to collect data from any number of threads simultaneously.
                 This has to be done in a cheap manner to influence the time code takes to execute as little as possible, 
