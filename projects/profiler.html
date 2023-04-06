@@ -40,7 +40,7 @@
                     <p class="pa">
                         When building a game engine it can be difficult 
                         to keep track of what your code execution looks like 
-                        and where time is being spent in your game, especially if it's running on multiple threads.
+                        and where time is being spent in your game, especially if it's running on <span class="colored">multiple threads.</span>
                         That's why I wanted to make a tool to measure performance in our engine.
                     </p>
                     <ul>
@@ -210,7 +210,7 @@
                 the vector would be moved in memory and the reference would become invalid. My solution to this is to 
                 allocate memory on the heap for the vector using a <span class="colored">unique_ptr</span>.
                 This has the added benefit that if we have returned once, we can store the vector as a <span class="colored">thread_local</span> 
-                which means we never have to lock on that thread again. Making this system almost lock-free. 
+                which means we never have to lock on that thread again. Making this system almost <span class="colored">lock-free.</span>
             </p>
 
             <h2>Conclusion </h2>

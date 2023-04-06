@@ -202,9 +202,8 @@ section {
 .slides .prev, .slides .next {
     color: var(--main-color);
     cursor: pointer;
-    top: 50%;
     width: auto;
-    margin-top: -10px;
+    position: relative;
     padding: 16px;
     color: white;
     font-weight: bold;
@@ -213,6 +212,11 @@ section {
     border-radius: 0 3px 3px 0;
     user-select: none;
     height: 50px;
+}
+
+.slides:hover a {
+    background-color: var(--second-bg-color);
+    border-radius: 50px;
 }
 
 .slides .next {
@@ -283,4 +287,9 @@ a.anchor {
     position: relative;
     top: -250px;
     visibility: hidden;
+}
+
+.contact-link {
+    font-size: 1.15rem;
+    color: var(--main-color);
 }
