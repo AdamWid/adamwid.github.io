@@ -59,23 +59,23 @@
                 but all of them include starting and stopping a timer. 
                 I wanted to make adding this timer as easy as possible to 
                 enable the use of the tool throughout our codebase.
-                Another requirement i had was to allow the collection of data 
+                Another requirement I had was to allow the collection of data 
                 to be turned off when building and releasing the game. 
             </p>
 
             <p class="pa">
-                The idea to time the code was simple, create a stack-allocted object 
-                in the top of the current scope, push the current time on construction of the object
-                to a stack, and in the destructor we pop the top of stack and record the time it took from
+                The idea to time the code was simple: create a stack-allocated object 
+                at the top of the current scope, push the current time on construction of the object
+                to a stack, and in the destructor, pop the top of the stack and record the time it took from
                 construction to now.
             </p>
 
             <p class="pa">
-                This works well for several reasons, 
-                one benefit of using an object with a destructor is that the destructor is 
-                guaranteed to be called when going out of scope.
+                This works well for several reasons. 
+                One benefit of using an object with a destructor is that the destructor is 
+                guaranteed to be called when the object goes out of scope.
                 Another benefit is that as long as the object is the first to be created, it will always
-                be the last one to be destroyed as objects in C++ are destructed in reverse construction order.
+                be the last one to be destroyed, as objects in C++ are destructed in reverse construction order.
                 This means that any possible destructors of objects we want to include in our 
                 timings will get captured as well.
             </p>
@@ -128,12 +128,12 @@
             <p class="pa">
                 I decided to utilize a macro to generate
                 information like a unique name, the current function name and line numbers for the object.
-                macros are great for this purpose as they can easily be turned off to completely
+                Macros are great for this purpose, as they can easily be turned off to completely
                 remove any trace of our profiling.
                 MSVC has the <span class="colored">__FUNCTION__</span> macro which I will use. 
                 This macro is replaced with a formatted string of the current function name during preprocessing.
-                It would be possible to use <span class="colored">__func__</span> aswell however it does not include
-                namespace/class names.
+                It would be possible to use <span class="colored">__func__</span> as well, however, it does not include
+                namespace or class names.
             </p>
             
             <pre>
@@ -157,14 +157,14 @@
             <p class="pa">
                 One of the goals of the profiler was to allow you to collect data from any number of threads simultaneously.
                 This has to be done in a cheap manner to influence the time code takes to execute as little as possible, 
-                after all we don't want our results to change when measuring it.
+                after all, we don't want our results to change when measuring it.
             </p>
             <p class="pa">
-                As the main thread needs all thread's list of timings after the frame to visualize them, 
+                As the main thread needs all threads list of timings after the frame to visualize them, 
                 they somehow need to be stored in a shared container. I use a simple vector where the thread's ID is
-                an index to it's local list of timings. This id needs to be small enough to be used as an index, so using 
+                an index to its local list of timings. This id needs to be small enough to be used as an index, so using 
                 <span class="colored">std::this_thread::get_id</span> was not possible. My solution instead was to write my own
-                simple <i>thread id</i> function.
+                simple <i>thread ID</i> function.
             </p>
             <pre>
                 <code class="language-cpp">
@@ -178,14 +178,14 @@
             </pre>
 
             <p class="pa">
-                The id's will now start at 0 and increase to the number of used threads. 
+                The ids will now start at 0 and increase to the number of used threads. 
                 The atomic variable will ensure that no threads can increment the <span class="colored">nextID</span> variable at the same time.
             </p>
             <p class="pa">
-                Currently our list of timings look a little like <span class="colored">std::vector&lt;std::vector&lt;TimingResult&gt;&gt;</span>,
-                if we encounter a thread who's ID is larger than the current size of the array, 
-                the array would neet to be resized. this operation also need to be thread-safe. 
-                below is the helper I use to get the current thread's timing results. it implements a simple <span class="colored">spinlock</span>.
+                Currently, our list of timings looks a little like <span class="colored">std::vector&lt;std::vector&lt;TimingResult&gt;&gt;</span>.
+                If we encounter a thread whose ID is larger than the current size of the array, 
+                the array would need to be resized. This operation also needs to be thread-safe. 
+                Below is the helper I use to get the current thread's timing results. It implements a simple <span class="colored">spinlock</span>.
             </p>
 
             <pre>
@@ -206,24 +206,25 @@
                 </code>
             </pre>
             <p class="pa">
-                However there is still a problem. If another thread resizes while we are using our returned vector, 
+                However, there is still a problem. If another thread resizes while we are using our returned vector, 
                 the vector would be moved in memory and the reference would become invalid. My solution to this is to 
                 allocate memory on the heap for the vector using a <span class="colored">unique_ptr</span>.
-                This has the added benefit that if we have returned once, we can store the vector as a <span class="colored">thread_local</span> 
+                This has the added benefit that if we have returned once, we can store the vector as a <span class="colored">thread_local</span>, 
                 which means we never have to lock on that thread again. Making this system almost <span class="colored">lock-free.</span>
             </p>
 
             <h2>Conclusion </h2>
             <p class="pa">
-                We now have all the parts nesscesary to use this data and visualize it as we please. 
+                We now have all the parts necessary to use this data and visualize it as we please. 
                 I used <a class="link" href="https://github.com/ocornut/imgui">Dear ImGui's</a> drawlist 
-                to render all collected data in our engine's editor. The tool has so far been useful on multiple occations by other group members
+                to render all collected data in our engine's editor. 
+                The tool has so far been useful on multiple occasions by other group members
                 to find and resolve performance bottlenecks in our codebase.
             </p>
 
             <p class="pa">
-                Overall I'm very pleased with how the profiler turned out. 
-                There is however some areas i would like to improve given more time,
+                Overall, I'm very pleased with how the profiler turned out. 
+                There are however some areas I would like to improve given more time,
                 for example the ability to sum the duration of all functions for a given type or saving/loading the history of frames to disk.
             </p>
             
