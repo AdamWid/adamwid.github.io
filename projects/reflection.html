@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
+        <script type="text/javascript" src="../js/main.js"></script>
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -34,23 +35,333 @@
                 and since we ideally wanted to keep our editor/game projects separated which meant no component-specific code, 
                 I was tasked with making a reflection system.
             </p>
+            
+            <h2> What is reflection? </h2>
+            <p class="pa">
+                In programming, reflection refers to the ability of a 
+                program to examine and modify its own structure and behavior at runtime.
+                Some languages like <span class="colored">C#</span> and <span class="colored">Java</span> 
+                support reflection nativly. this enables them to support features
+                like automatic serialization/deserialization or creating objects from names.
+                <br>
+
+                However, one of the core ideas of C++ is that 
+                <span class="colored"> you only pay for what you use.</span>
+                For reflection this means that any metadata of the program's original structure 
+                is lost during compilation and it's up to the programmer to implement
+                any features needed to support reflection.
+
+                <!-- In programming, reflection refers to the ability of a 
+                program to examine and modify its own structure and behavior at runtime.
+                Some languages like C# and Java
+                support reflection nativly.
+                However one of the core ideas of C++ is that 
+                 you only pay for what you use.
+                For reflection this means that any metadata of the program's original structure 
+                is lost during compilation and it's up to the programmer to implement
+                any features needed for reflection. -->
+            </p>
 
             <p class="pa">
-                Before starting I made a list of requirements:
+                Some of my goals with the reflection system besides providing a 
+                way to edit components outside of the <i>editor</i> was:
             </p>
             <ul>
                 <li> No extra data stored on components, copying and moving components had to remain fast. </li>
-                <li> No type specific editing code needed, all types had to recursivly render </li>
-                <li> Support for common stl-container like <span class="colored">vector</span> and <span class="colored">unordered_map</span> </li>
+                <li> No need to inherit from any classes to support reflection for that type </li>
+                <li> Support for common stl-containers like <span class="colored">vector</span> and <span class="colored">unordered_map</span> </li>
             </ul>
+
             <h2>Registration</h2>
             <p class="pa">
-                With the first requirement in mind, I decided on creating a registry where you register a type's members once,
-                which you can later query using their registred name or an instance of the object.
+                With the first requirement in mind, I decided on creating a registry to store the data, 
+                a class with static methods where you register a type's members once at the start of the program, 
+                and can then later be globally used to query type information 
+                by using for example the registered name or an instance of the object.
             </p>
+            <p class="pa">
+                The registration of a type is done in the following manner:
+            </p>
+            <pre>
+                <code class="language-cpp">
+                    MetaRegistry::RegisterClass&lt;Foo&gt;("Foo")
+                        .RegisterMember("bar", &Foo::bar)
+                        .RegisterMember("baz", &Foo::baz);
+                </code>
+            </pre>
+            <p class="pa">
+                As all registered classes are templated, they inherit from the common class
+                <span class="colored">IMetaClass</span>. This class is an interface that
+                allow us to query a given type without knowing the type that is reflected.
+                <br>
+                Registering members of a class is similar, however 
+                they are stored on each class and is done by utilizing 
+                the <span class="colored"><i>pointers to members</i></span> syntax. The implementation of 
+                <span class="colored">RegisterMember</span> looks like the following:
+                <pre>
+                    <code class="language-cpp">
+                        template &lt;typename MemberType&gt;
+                        MetaClass& RegisterMember(const char* aName, MemberType ClassType::* aMember)
+                        {
+                            myMembers.emplace_back(
+                                std::make_unique&lt;MetaMember&lt;ClassType, MemberType&gt;&gt;(aName, aMember)
+                            );
+                            return *this;
+                        }
+                    </code>
+                </pre> 
+                <p class="pa">
+                    Where the <span class="colored">ClassType</span> 
+                    template is the owner of the current member.
+                </p>
+            </p>
+
+            <h2>How I needed the reflection system</h2>
+            <p class="pa">
+                As this system was intended mostly as a way to edit components 
+                from an <span class="colored">inspector</span>, I needed a way to to check if
+                an entity in our <a class="link" href="../projects/ecs.html">entity component system</a> 
+                contained any reflectable types, the way i chose to meet this requirement
+                was by iterating all reflected types, then calling a virtual function 
+                that returns true if the selected entity owns a component of the current type.
+            </p>
+            <pre>
+                <code class="language-cpp">
+                    for (IMetaClass& type : MetaRegistry::Classes())
+                    {
+                        if (type.Contains(aRegistry, aSelectedEntity))
+                        {
+                            std::unique_ptr&lt;IMetaReference&gt; reference = type.CreateReference(aRegistry, aSelectedEntity);
+                            RenderWidget(reference, aRegistry, aSelectedEntity);
+                        }
+                    }
+                </code>
+            </pre>
+
+            <h2>Creating references to members</h2>
+            <p class="pa">
+                In the above example, i use the method CreateReference, this
+                method is simply a virtual function that gets the object out of our 
+                entity component system and stores it as a pointer in the 
+                <span class="colored">MetaReference</span>-class.
+                <br>
+                <br>
+            </p>
+
+            <p class="pa">    
+                The MetaMember class however currently just stores
+                a <i>Pointer to a member</i> which looks like 
+                <span class="colored">MemberType ClassType::*</span>. 
+                This is not a normal pointer, we need an instance of <span class="colored">ClassType</span>
+                to dereference it. Luckily since we already store a reference to the
+                <i>ClassType</i>-object, and <i>ClassType</i> is a known type in
+                the <span class="colored">MetaMember</span>-class we can 
+                cast the type-erased reference back into it's real type.
+                <br>
+                <br>
+                This allows us to create references to members of classes as well.
+            </p>
+            <pre>
+                <code class="language-cpp">
+                    std::unique_ptr&lt;IMetaReference&gt; CreateReference(IMetaReference& aParentClass)
+                    {
+                        ClassType& parent = *static_cast&lt;MetaReference&lt;ClassType&gt;&amp;&gt;(aParent).GetReference();
+                        return std::make_unique&lt;MetaReference&lt;MemberType&gt;&gt;(parent.*memberPointer, GetName());
+                    }
+                    MemberType ClassType::* memberPointer;
+                </code>
+            </pre>
+            <p class="pa">
+                Casting type-erased interface classes back into 
+                their templated derived class through virtual functions like this is 
+                something i have utilized heavily in this
+                system. And while not very pretty, it's needed as I need to 
+                store and operate on them without knowing their types at compile-time.
+            </p>
+
+            <h2>Iterating and rendering the members</h2>
+            <h3>The first approach</h3>
+            <p class="pa">
+                My first approach to rendering through a given type's members was done 
+                by looping through all members of the current type each recursive call, and when
+                encountering a type that's known, for example fundamental types like 
+                <span class="colored">int</span> and <span class="colored">float</span>,
+                I called the appropriate function to handle that type.
+                <br>
+                <br>
+                That method looked similar to the following example:
+            </p>
+                <pre>
+                    <code class="language-cpp">
+                        void RenderWidget(IMetaReference& aReference)
+                        {
+                            ImGui::Text(aReference.GetName());
+                            if (HasKnownEditingFunction(aReference))
+                            {
+                                EditType(aReference);
+                                return;
+                            }
+
+                            ImGui::Indent();
+                            for (IMetaMember& memberType : aReference.GetMembers())
+                            {
+                                std::unique_ptr&lt;IMetaReference&gt; memberReference = member.CreateReference(aReference);
+                                RenderWidget(memberReference);
+                            }
+                            ImGui::Unindent();
+                        }
+                    </code>
+                </pre>
+            <p class="pa">
+                However this method was flawed in that it both required 
+                quite a few heap-allocations more than might be nesscesary,
+                but more importantly, it was flawed in the way that
+                it wasn't possible to loop through the members of
+                templated stl-types like vector or a more difficult example, tuples.
+                Not without registering each possible instantiation of that type.
+            </p>
+            <h3>The second approach</h3>
+            <p class="pa">
+                After scratching my head for a while and trying different
+                solutions to the problems with the first method, I finally tried
+                to utilize the <span class="colored"><i>Visitor pattern</i></span>.
+
+                <br>
+                The visitor pattern approach allowed me to specialize 
+                the way members of a type should be iterated by creating a
+                template specialization of the MetaReference class. While this is not
+                a perfect solution, it allows me to iterate through types that would
+                otherwise be impossible without an explicit registration 
+                of that type and it's exact template parameters.
+                <br>
+                <br>
+                The editor now inherits from a <i>Visitor</i> class
+                and the iteration is updated like the following example:
+            </p>
+            <pre>
+                <code class="language-cpp">
+                    class EditorVisitor : public MetaVisitor
+                    {
+                        void Accept(IMetaReference& aReference) const override
+                        {
+                            ImGui::Text(aReference.GetName());
+                            if (HasKnownEditingFunction(aReference))
+                            {
+                                EditType(aReference);
+                            }
+                            else
+                            {
+                                ImGui::Indent();
+                                for (IMetaMember& memberType : aReferece.GetMembers())
+                                {
+                                    std::unique_ptr&lt;IMetaReference&gt; memberReference = memberType.CreateReference(aReference);
+                                    memberReference->Visit(*this);
+                                }
+                                ImGui::Unintent();
+                            }
+                                
+                        }
+                    };
+
+                    EditorVisitor visitor;
+                    for (IMetaClass& type : MetaRegistry::Classes())
+                    {
+                        if (type.Contains(aRegistry, aSelectedEntity))
+                        {
+                            std::unique_ptr&lt;IMetaReference&gt; reference = type.CreateReference(aRegistry, aSelectedEntity);
+                            reference->Visit(visitor);
+                        }
+                    }
+                </code>
+            </pre>
+
+            <h3>The default case</h3>
+            <pre>
+                <code class="language-cpp">
+                    template &lt;typename T&gt;
+                    class MetaReference : public IMetaReference
+                    {
+                    public:
+                        void Accept(MetaVisitor& aVisitor) override
+                        {
+                            aVisitor.Accept(*this);
+                        }
+                    private:
+                        T* myReference;
+                    };
+                </code>
+            </pre>
+
+            <h3>A template specializaton of vector</h3>
+            <pre>
+                <code class="language-cpp">
+                    template &lt;typename T&gt;
+                    class MetaReference&lt;std::vector&lt;T&gt;&gt; : public IMetaReference
+                    {
+                    public:
+                        void Accept(MetaVisitor& aVisitor) override
+                        {
+                            for (size_t i = 0; i < myReference->size(); ++i)
+                            {
+                                std::string name = std::to_string(i);
+                                MetaReference&lt;T&gt; elem((*myReference)[i], name.c_str());
+                                elem.Visit(aVisitor);
+                            }
+                        }
+                    private:
+                        std::vector&lt;T&gt;* myReference;
+                    };
+                </code>
+            </pre>
+
+            <h2>Results</h2>
+            <p class="pa">
+                Utilizing templates like this allowed the reflection system
+                to become very flexible, and support almost any type with minimal effort. But it's not 
+                without it's shortcomings.
+            </p>
+
+            Some things i would like to improve include:
+            <ul>
+                <li>
+                    Refactorization: the systems has gone through 
+                    multiple iterations and could use some cleanup
+                </li>
+                <li>
+                    Support for member functions, this is teoretically not that much more work
+                    and would be a nice addition.
+                </li>
+                <li>
+                    Adding support for base classes, currently each registration needs to include
+                    it's base classes members as well.
+                </li>
+                <li>
+                    Inspector formatting: The formatting for complex types in the inspector 
+                    is not ideal, this is something i would like to improve.
+                </li>
+            </ul>
+            <h3> That was a lot of details, let's see it in action!</h3>
+            <div class="grid-parent">
+                <div class="slides">
+                    <div class="slide">
+                        <img src="../content/spite/screenshot01.png" alt="spite">
+                    </div>
+                    <div class="slide">
+                        <img src="../content/spite/screenshot03.png" alt="spite">
+                    </div>
+                    <div class="slide">
+                        <img src="../content/spite/screenshot02.png" alt="spite">
+                    </div>
+                    <div class="slide">
+                        <img src="../content/spite/screenshot04.png" alt="spite">
+                    </div>
+                    <a class="prev" onclick="nextSlide(this, -1)"><i class='bx bx-chevron-left'></i></a>
+                    <a class="next" onclick="nextSlide(this, 1)"><i class='bx bx-chevron-right'></i></a>
+                </div>
+            </div>
+           
+
         </div>
     </section>
-
-    <script type="text/javascript" src="../js/main.js"></script>
 </body>
 </html>

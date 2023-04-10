@@ -182,15 +182,15 @@
                 The atomic variable will ensure that no threads can increment the <span class="colored">nextID</span> variable at the same time.
             </p>
             <p class="pa">
-                Currently our list of timings look a little like <span class="colored">std::vector&lt;std::vector&lt;Result&gt;&gt;</span>,
+                Currently our list of timings look a little like <span class="colored">std::vector&lt;std::vector&lt;TimingResult&gt;&gt;</span>,
                 if we encounter a thread who's ID is larger than the current size of the array, 
                 the array would neet to be resized. this operation also need to be thread-safe. 
-                below is the helper I use to get the current thread's results. it implements a simple <span class="colored">spinlock</span>.
+                below is the helper I use to get the current thread's timing results. it implements a simple <span class="colored">spinlock</span>.
             </p>
 
             <pre>
                 <code class="language-cpp">
-                    std::vector&lt;Result&gt;&amp; ProfileData::GetResultsFromThreadID(ThreadID anID)
+                    std::vector&lt;TimingResult&gt;&amp; ProfileData::GetResultsFromThreadID(ThreadID anID)
                     {
                         static std::atomic_bool getting = false;
                 
@@ -222,7 +222,8 @@
             </p>
 
             <p class="pa">
-                Overall I'm very pleased with how the profiler turned out. There is however some areas i would like to improve,
+                Overall I'm very pleased with how the profiler turned out. 
+                There is however some areas i would like to improve given more time,
                 for example the ability to sum the duration of all functions for a given type or saving/loading the history of frames to disk.
             </p>
             

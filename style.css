@@ -293,3 +293,8 @@ a.anchor {
     font-size: 1.15rem;
     color: var(--main-color);
 }
+
+.dc {
+    color: var(--second-color);
+    font-size: 0.8rem;
+}
