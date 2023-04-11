@@ -6,16 +6,16 @@ function loadPage(file) {
 
 function Init()
 {
-    slides = document.getElementsByClassName("slides");
+    let slides = document.getElementsByClassName("slides");
 
-    for (i = 0; i < slides.length; ++i)
+    for (let i = 0; i < slides.length; ++i)
     {
-        slide = slides[i];
-        children = slide.getElementsByClassName("slide");
+        let slide = slides.item(i);
+        let children = slide.getElementsByClassName("slide");
     
-        for (i = 0; i < children.length; ++i)
+        for (let i = 0; i < children.length; ++i)
         {
-            child = children[i];
+            let child = children[i];
             if (i == 0)
             {
                 child.classList.add("active");

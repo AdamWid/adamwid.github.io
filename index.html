@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio</title>
+    <title>Adam Rohdin - Game programmer</title>
     <link rel="icon" type="image/x-icon" href="content/icons/favicon.ico">
     <link rel="stylesheet" href="style.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
@@ -31,19 +31,21 @@
         hello this is a section
     </section> -->
     <section class="projects" id="projects">
+        <!--
         <div class="main-text">
             <h1>This website is a work in progress!</h1>
         </div>
+        -->
         <div class="projects-content grid-parent">
 
             <!-- entity component system -->
             <div class="project-showcase" onclick="loadPage('projects/ecs.html')">
                 <div class="project-image">
-                    <img src="https://docs.unity3d.com/Packages/com.unity.entities@0.51/manual/images/ECSBlockDiagram.png" alt="ecs">
+                    <img src="content/ecs-abstract.png" alt="ecs">
                 </div>
                 <div class="project-text">
                     <h5>Entity component system</h5>
-                    <p class="pa">Our engine's entity component system</p>
+                    <p class="pa">Our engine's entity component system </p>
                 </div>
                 <a href="projects/ecs.html" class="boxlink"><i class='bx bx-link-external' ></i> Read more</a>
             </div>
@@ -64,7 +66,7 @@
             <!-- visual performance profiler -->
             <div class="project-showcase" onclick="loadPage('projects/profiler.html')">
                 <div class="project-image">
-                    <img src="content/profiler.png" alt="profiler">
+                    <img src="content/profiler/4.png" alt="profiler">
                 </div>
                 <div class="project-text">
                     <h5>performance profiler</h5>
@@ -96,8 +98,18 @@
 
         <!-- MIME//SCAPE -->
         <div class="grid-parent"> 
-            <div class="left">
-                <img src="content/mime-scape/mockup_v2.jpg" alt="spite">
+            <div class="left" style="height: 100%">
+                <div class="slides" style="height: 100%; align-items: center;"> 
+                    <div class="slide">
+                        <img src="content/mime-scape/1.png" alt="mime//scape">
+                    </div>
+                    <div class="slide">
+                        <img src="content/mime-scape/2.png" alt="rahi">
+                    </div>
+                    <a class="prev" onclick="nextSlide(this, -1)"><i class='bx bx-chevron-left'></i></a>
+                    <a class="next" onclick="nextSlide(this, 1)"><i class='bx bx-chevron-right'></i></a>
+                </div>
+               
             </div>
 
             <div class="right">
@@ -110,7 +122,7 @@
                 <ul>
                     <li> Visual scripting system </li>
                     <li> <a class="link" href="projects/reflection.html">Reflection system</a></li>
-                    <li> Checkpoints and savestate </li>
+                    <li> Checkpoints and save-state for dynamic objects and scripts </li>
                     <li> Audio implementations </li>
                 </ul>
             </div>
@@ -165,9 +177,56 @@
                     <a class="prev" onclick="nextSlide(this, -1)"><i class='bx bx-chevron-left'></i></a>
                     <a class="next" onclick="nextSlide(this, 1)"><i class='bx bx-chevron-right'></i></a>
                 </div>
-                
+               
+            </div>
+            
+        </div>
+
+        <hr>
+
+        <!-- Rahi -->
+        <div class="grid-parent"> 
+            <div class="left" style="height: 100%">
+                <div class="slides" style="height: 100%; align-items: center;"> 
+                    <div class="slide">
+                        <img src="content/rahi/1.png" alt="rahi">
+                    </div>
+                    <div class="slide">
+                        <img src="content/rahi/2.png" alt="rahi">
+                    </div>
+                    <div class="slide">
+                        <img src="content/rahi/3.png" alt="rahi">
+                    </div>
+                    <div class="slide">
+                        <img src="content/rahi/4.png" alt="rahi">
+                    </div>
+                    <div class="slide">
+                        <img src="content/rahi/5.png" alt="rahi">
+                    </div>
+                    <a class="prev" onclick="nextSlide(this, -1)"><i class='bx bx-chevron-left'></i></a>
+                    <a class="next" onclick="nextSlide(this, 1)"><i class='bx bx-chevron-right'></i></a>
+                </div>
+               
+            </div>
+
+            <div class="right">
+                <h1> Rahi: Lost & Puzzled </h1>
+                <p class="pa">
+                    Mobile puzzle game inspired by Geostorm and Sokoban.
+                    <br>
+                    Nominated for mobile GOTY 2022 at <a class="link" href="https://www.gameawards.se/2022-nominees">The Swedish Game Awards</a>.
+                </p>
+                <h2>Contributions</h2>
+                <ul>
+                    <li> Grid system </li>
+                    <li> On-interact system </li>
+                    <li> Player controller </li>
+                    <li> World-space UI </li>
+                </ul>
             </div>
         </div>
+
+        
        
     </section>
 
@@ -240,7 +299,7 @@
                             <i class='bx bxl-github'></i> <a class="link" href="https://github.com/AdamWid"> adamwid</a></i>
                         </div>
                         <div class="contact-link">
-                            <i class='bx bx-file'></i> <a class="link" href=""> Resumé </a></i>
+                            <i class='bx bx-file'></i> <a class="link" href="content/CV_Adam_Rohdin_2023-04-11.pdf"> Resumé </a></i>
                         </div>
                         <div class="contact-link">
                             <i class='bx bx-phone' ></i> <a class="link" href="tel:0722347159"> +46 72 234 7159 </a></i>

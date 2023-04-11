@@ -199,11 +199,22 @@ section {
     display: block;
 }
 
-.slides .prev, .slides .next {
-    color: var(--main-color);
-    cursor: pointer;
-    width: auto;
+.slides {
     position: relative;
+    margin: auto;
+}
+
+.slides .slide {
+    height: auto;
+    width: 100%;
+}
+
+.slides .prev, .slides .next {
+    cursor: pointer;
+    position: absolute;
+    top: 50%;
+    width: auto;
+    margin-top: -22px;
     padding: 16px;
     color: white;
     font-weight: bold;
@@ -211,7 +222,6 @@ section {
     transition: 0.6s ease;
     border-radius: 0 3px 3px 0;
     user-select: none;
-    height: 50px;
 }
 
 .slides:hover a {
@@ -220,13 +230,11 @@ section {
 }
 
 .slides .next {
-    right: 0;
-    float: right;
+    right: 2%;
     border-radius: 3px 0 0 3px;
 }
 .slides .prev {
-    left: 0;
-    float: left;
+    left: 2%;
 }
 
 .project-showcase {

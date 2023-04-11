@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio</title>
+    <title>Adam Rohdin - Game programmer</title>
     <link rel="stylesheet" href="../style.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 
@@ -12,7 +12,7 @@
     <script src="../external/highlight.min.js"></script>
     <script>hljs.highlightAll();</script>
 </head>
-<body>
+<body onload="Init()">
     <!-- header design -->
     <header>
         <a href="../index.html" class="logo">Adam Rohdin</a>
@@ -33,7 +33,7 @@
           
             <div class="grid-parent">
                 <div>
-                    <img src="../content/profiler.png" alt="" style="height: 300px; width: 100%;">
+                    <img src="../content/profiler/4.png" alt="">
                 </div>
                 <div>
                     <h3> Introduction </h3>
@@ -85,19 +85,19 @@
                     <pre>
                         <h4 style="margin-bottom: 0; padding-bottom: 0;" class="colored"> Using functions </h4>
                         <code class="language-cpp">  
-                        void Foo()
-                        {
-                            StartTimer();
+void Foo()
+{
+    StartTimer();
 
-                            std::vector&lt;int&gt; allocatedData{1,2,3,4,5};
+    std::vector&lt;int&gt; allocatedData{1,2,3,4,5};
 
-                            if (rand() % 100)
-                            {
-                                return; // Timer not stopped
-                            }
+    if (rand() % 100)
+    {
+        return; // Timer not stopped
+    }
 
-                            StopTimer(); // vector destructor not included
-                        }
+    StopTimer(); // vector destructor not included
+}
                         </code>
                     </pre>
                 </div>
@@ -105,19 +105,19 @@
                     <pre>
                         <h4 style="margin-bottom: 0; padding-bottom: 0;" class="colored"> Using a scoped object </h4>
                         <code class="language-cpp">  
-                        void Foo()
-                        {
-                            TimerObject timer;
+void Foo()
+{
+    TimerObject timer;
 
-                            std::vector&lt;int&gt; allocatedData{1,2,3,4,5};
+    std::vector&lt;int&gt; allocatedData{1,2,3,4,5};
 
-                            if (rand() % 100)
-                            {
-                                return; // Timer stopped after vector destructor
-                            }
+    if (rand() % 100)
+    {
+        return; // Timer stopped after vector destructor
+    }
 
-                            // Timer stopped after vector destructor
-                        } 
+    // Timer stopped after vector destructor
+} 
                         </code>
                     </pre>
                 </div>
@@ -138,17 +138,17 @@
             
             <pre>
                 <code class="language-cpp">  
-                class ProfileScope
-                {
-                public:
-                    ProfileScope(const char* aFunction, const char* aFile, unsigned int aLine);
-                    ~ProfileScope();
-                    ProfileScope(const ProfileScope&) = delete;
-                    ProfileScope(ProfileScope&&) = delete;
-                }
+class ProfileScope
+{
+public:
+    ProfileScope(const char* aFunction, const char* aFile, unsigned int aLine);
+    ~ProfileScope();
+    ProfileScope(const ProfileScope&) = delete;
+    ProfileScope(ProfileScope&&) = delete;
+}
 
-                #define MYS_PROFILE_SCOPE(NAME) UNIQUE_NAME(NAME, __FILE__, __LINE__)
-                #define MYS_PROFILE_FUNCTION() MYS_PROFILE_SCOPE(__FUNCTION__)
+#define MYS_PROFILE_SCOPE(NAME) UNIQUE_NAME(NAME, __FILE__, __LINE__)
+#define MYS_PROFILE_FUNCTION() MYS_PROFILE_SCOPE(__FUNCTION__)
                 </code>
             </pre>
 
@@ -168,12 +168,12 @@
             </p>
             <pre>
                 <code class="language-cpp">
-                    ThreadID GetCurrentThreadID()
-                    {
-                        static std::atomic_uint32_t nextID = 0;
-                        static thread_local ThreadID currentID{ nextID++ };
-                        return currentID;
-                    }
+ThreadID GetCurrentThreadID()
+{
+    static std::atomic_uint32_t nextID = 0;
+    static thread_local ThreadID currentID{ nextID++ };
+    return currentID;
+}
                 </code>
             </pre>
 
@@ -190,26 +190,26 @@
 
             <pre>
                 <code class="language-cpp">
-                    std::vector&lt;TimingResult&gt;&amp; ProfileData::GetResultsFromThreadID(ThreadID anID)
-                    {
-                        static std::atomic_bool getting = false;
-                
-                        while (getting.exchange(true));
-                
-                        if (anID.id >= myThreadResults.size())
-                            myThreadResults.resize(anID.id + 1);
+std::vector&lt;TimingResult&gt;&amp; ProfileData::GetResultsFromThreadID(ThreadID anID)
+{
+    static std::atomic_bool getting = false;
 
-                        getting.store(false);
-                
-                        return myThreadResults[anID.id];
-                    }
+    while (getting.exchange(true));
+
+    if (anID.id >= myThreadResults.size())
+        myThreadResults.resize(anID.id + 1);
+
+    getting.store(false);
+
+    return myThreadResults[anID.id];
+}
                 </code>
             </pre>
             <p class="pa">
                 However, there is still a problem. If another thread resizes while we are using our returned vector, 
                 the vector would be moved in memory and the reference would become invalid. My solution to this is to 
                 allocate memory on the heap for the vector using a <span class="colored">unique_ptr</span>.
-                This has the added benefit that if we have returned once, we can store the vector as a <span class="colored">thread_local</span>, 
+                This has the added benefit that if we have returned once, we can store a reference to the vector as a <span class="colored">thread_local</span>, 
                 which means we never have to lock on that thread again. Making this system almost <span class="colored">lock-free.</span>
             </p>
 
@@ -227,6 +227,21 @@
                 There are however some areas I would like to improve given more time,
                 for example the ability to sum the duration of all functions for a given type or saving/loading the history of frames to disk.
             </p>
+
+            <div class="grid-parent" style="height: 100%">
+                <div class="slides" style="height: 100%; align-items: center;">
+                    <div class="slide">
+                        <h3>Multiple threads support </h3>
+                        <img src="../content/profiler/2.png" alt="spite">
+                    </div>
+                    <div class="slide">
+                        <h3>Viewing a large number of frames</h3>
+                        <img src="../content/profiler/selecting-history.gif" alt="spite">
+                    </div>
+                    <a class="prev" onclick="nextSlide(this, -1)"><i class='bx bx-chevron-left'></i></a>
+                    <a class="next" onclick="nextSlide(this, 1)"><i class='bx bx-chevron-right'></i></a>
+                </div>
+            </div>
             
         </div>
     </section>

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio</title>
+    <title>Adam Rohdin - Game programmer</title>
     <link rel="icon" type="image/x-icon" href="../content/icons/favicon.ico">
     <link rel="stylesheet" href="../style.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
@@ -41,7 +41,9 @@
 
             <!-- final thoughts and improvements -->
             
-            <h1>Entity component system</h1>
+            <div style="justify-content: center; width: 100%; text-align: center;">
+                <h1 style="margin-bottom: 50px; font-size: 30px;"> Entity component system </h1>
+            </div>
 
              <!-- why i wanted to make a entity component system -->
             <p class="pa">
@@ -95,12 +97,12 @@
                         <pre>
                             <h4 style="margin-bottom: 0; padding-bottom: 0;" class="colored">Example memory layout in a data oriented game</h4>
                             <code class="language-cpp">
-                            class Foo
-                            {
-                                Vector3 position;
-                                Vector3 rotation;
-                                Vector3 scale;
-                            };
+class Foo
+{
+    Vector3 position;
+    Vector3 rotation;
+    Vector3 scale;
+};
                             </code>
                         </pre>
                     </div>
@@ -116,20 +118,20 @@
                     <pre>
                         <h4 style="margin-bottom: 0; padding-bottom: 0;" class="colored">Example memory layout in a object-oriented game</h4>
                         <code class="language-cpp">
-                        class Bar
-                        {
-                            Vector3 position;
-                            Vector3 rotation;
-                            Vector3 scale;
-    
-                            // unrelated data
-                            Color color;
-                            Texture texture;
-                            Model model;
-                            float health;
-                            float damage;
-                            ... more
-                        };
+class Bar
+{
+    Vector3 position;
+    Vector3 rotation;
+    Vector3 scale;
+
+    // unrelated data
+    Color color;
+    Texture texture;
+    Model model;
+    float health;
+    float damage;
+    ... more
+};
                         </code>
                     </pre>
                 </div>
@@ -151,21 +153,21 @@
 
             <pre>
                 <code class="language-cpp">
-                    using Entity = uint32_t;
-                    constexpr Entity nullentity = 0xffffffff;
+using Entity = uint32_t;
+constexpr Entity nullentity = 0xffffffff;
 
-                    Entity Create()
-                    {
-                        return (myFreeEntities.Size()) ? myFreeEntities.Dequeue() : myNext++;
-                    }
+Entity Create()
+{
+    return (myFreeEntities.Size()) ? myFreeEntities.Dequeue() : myNext++;
+}
 
-                    void Destroy(Entity aEntity)
-                    {
-                        for (uint32_t i = 0; i &lt; myContainers.Size(); ++i)
-                            myContainers[i]->Destroy(aEntity);
-                        
-                        myEntityQueue.Enqueue(aEntity);
-                    }
+void Destroy(Entity aEntity)
+{
+    for (uint32_t i = 0; i &lt; myContainers.Size(); ++i)
+        myContainers[i]->Destroy(aEntity);
+    
+    myEntityQueue.Enqueue(aEntity);
+}
                 </code>
             </pre>
             <p class="pa">
@@ -187,31 +189,31 @@
 
             <pre>
                 <code class="language-cpp">
-                    template &lt;typename... Args&gt;
-                    T& Emplace(Entity aEntity, Args&&... args)
-                    {
-                        assert(!Contains(aEntity) && "Component already exists");
-                        Grow(aEntity);
-                        myDense[size] = aEntity;
-                        mySparse[aEntity] = size++;
-                        myComponents.emplace_back(std::forward&lt;Args&gt;(args)...);
+template &lt;typename... Args&gt;
+T& Emplace(Entity aEntity, Args&&... args)
+{
+    assert(!Contains(aEntity) && "Component already exists");
+    Grow(aEntity);
+    myDense[size] = aEntity;
+    mySparse[aEntity] = size++;
+    myComponents.emplace_back(std::forward&lt;Args&gt;(args)...);
 
-                        return myComponents[size-1];
-                    }
+    return myComponents[size-1];
+}
 
-                    void Remove(Entity aEntity)
-                    {
-                        assert(Contains(aEntity) && "Removing nonexisting Component");
-                        Entity denseIndex = sparse[aEntity];
-                    
-                        --size;
-                        std::swap(myComponents.back(), myComponents[denseIndex]);
-                        std::swap(myDense[size], myDense[denseIndex]);
-                        mySparse[myDense[denseIndex]] = denseIndex;
-                    
-                        auto tmp = std::move(mirror.back());
-                        myComponents.pop_back();
-                    }
+void Remove(Entity aEntity)
+{
+    assert(Contains(aEntity) && "Removing nonexisting Component");
+    Entity denseIndex = sparse[aEntity];
+
+    --size;
+    std::swap(myComponents.back(), myComponents[denseIndex]);
+    std::swap(myDense[size], myDense[denseIndex]);
+    mySparse[myDense[denseIndex]] = denseIndex;
+
+    auto tmp = std::move(mirror.back());
+    myComponents.pop_back();
+}
                 </code>
             </pre>
             
@@ -225,12 +227,12 @@
             </p>
             <pre>
                 <code class="language-cpp">
-                    template &lt;typename T1, typename... Types, typename... Excludes&gt;
-                    TypeView&lt;TList&lt;T1, Types...&gt;, TList&lt;Excludes...&gt;&gt; View(ecs::Exclude&lt;Excludes...&gt;)
-                    {
-                        auto c = GetContainer&lt;T1&gt;();
-                        return { std::make_tuple(c, GetContainer&lt;Types&gt;()...), std::make_tuple(GetContainer&lt;Excludes&gt;()...) };
-                    }
+template &lt;typename T1, typename... Types, typename... Excludes&gt;
+TypeView&lt;TList&lt;T1, Types...&gt;, TList&lt;Excludes...&gt;&gt; View(ecs::Exclude&lt;Excludes...&gt;)
+{
+    auto c = GetContainer&lt;T1&gt;();
+    return { std::make_tuple(c, GetContainer&lt;Types&gt;()...), std::make_tuple(GetContainer&lt;Excludes&gt;()...) };
+}
                 </code>
             </pre>
             <p class="pa">
@@ -244,19 +246,19 @@
             </p>
             <pre>
                 <code class="language-cpp">
-                    auto view = myRegistry.View&lt;mys::Transform, mys::Collider&gt;(ecs::Exclude&lt;mys::Rigidbody&gt;());
-	            for (auto&amp;&amp; [entity, transform, collider] : view.Each()) // using structured bindings
-	            {
-	            	if(!collider.IsSleeping())
-	            		collider.SetTransform(transform);
-	            }
+auto view = myRegistry.View&lt;mys::Transform, mys::Collider&gt;(ecs::Exclude&lt;mys::Rigidbody&gt;());
+for (auto&amp;&amp; [entity, transform, collider] : view.Each()) // using structured bindings
+{
+    if(!collider.IsSleeping())
+        collider.SetTransform(transform);
+}
                 </code>
             </pre>
 
             <h2> That's it! </h2>
             <p class="pa">
                 I'm overall very pleased with how the system turned out, and has been used to a great extent in our engine.
-                There are a lot of details omitted here but i have included the source code for those interested. (Doesn't compile without some modification).
+                There are a lot of features and details omitted here but i have included the source code for those interested. (Compiles with C++17)
             </p>
             <a class="link" href="https://github.com/adamwid/ecs">Source</a>
         </div>

@@ -5,7 +5,7 @@
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Portfolio</title>
+        <title>Adam Rohdin - Game programmer</title>
         <link rel="icon" type="image/x-icon" href="../content/icons/favicon.ico">
         <link rel="stylesheet" href="../style.css">
         <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
@@ -15,7 +15,7 @@
         <script>hljs.highlightAll();</script>
     
     </head>
-<body>
+<body onload="Init()">
     <!-- header design -->
     <header>
         <a href="../index.html" class="logo">Adam Rohdin</a>
@@ -30,12 +30,32 @@
 
     <section class="content" id="content">
         <div class="container">
-            <p class="pa">
-                During game project 7 we had a need to view and edit components from our editor, 
-                and since we ideally wanted to keep our editor/game projects separated which meant no component-specific code, 
-                I was tasked with making a reflection system.
-            </p>
+            <div style="justify-content: center; width: 100%; text-align: center;">
+                <h1 style="margin-bottom: 50px; font-size: 30px;"> C++ Reflection </h1>
+            </div>
+            <div class="grid-parent">
+                <div>
+                    <p class="pa">
+                        During game project 7 we had a need to view and edit components from our editor, 
+                        and since we ideally wanted to keep our editor/game projects separated which meant no component-specific code, 
+                        I was tasked with making a reflection system.
+                    </p>
+                    <ul>
+                        <li><a class="link" href="#what-is">What is reflection?</a></li>
+                        <li><a class="link" href="#registration">Registering a type</a></li>
+                        <li><a class="link" href="#creating-references"> Creating references to members </a></li>
+                        <li><a class="link" href="#iteration-rendering"> Iterating and rendering the types </a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <img src="../content/reflection/inspector-showcase2.gif" alt="">
+                </div>
+
+            </div>
+           
             
+            <a class="anchor" id="what-is"></a>
             <h2> What is reflection? </h2>
             <p class="pa">
                 In programming, reflection refers to the ability of a 
@@ -72,6 +92,7 @@
                 <li> Support for common stl-containers like <span class="colored">vector</span> and <span class="colored">unordered_map</span> </li>
             </ul>
 
+            <a class="anchor" id="registration"></a>
             <h2>Registration</h2>
             <p class="pa">
                 With the first requirement in mind, I decided on creating a registry to store the data, 
@@ -84,9 +105,9 @@
             </p>
             <pre>
                 <code class="language-cpp">
-                    MetaRegistry::RegisterClass&lt;Foo&gt;("Foo")
-                        .RegisterMember("bar", &Foo::bar)
-                        .RegisterMember("baz", &Foo::baz);
+MetaRegistry::RegisterClass&lt;Foo&gt;("Foo")
+    .RegisterMember("bar", &Foo::bar)
+    .RegisterMember("baz", &Foo::baz);
                 </code>
             </pre>
             <p class="pa">
@@ -100,14 +121,14 @@
                 <span class="colored">RegisterMember</span> looks like the following:
                 <pre>
                     <code class="language-cpp">
-                        template &lt;typename MemberType&gt;
-                        MetaClass& RegisterMember(const char* aName, MemberType ClassType::* aMember)
-                        {
-                            myMembers.emplace_back(
-                                std::make_unique&lt;MetaMember&lt;ClassType, MemberType&gt;&gt;(aName, aMember)
-                            );
-                            return *this;
-                        }
+template &lt;typename MemberType&gt;
+MetaClass& RegisterMember(const char* aName, MemberType ClassType::* aMember)
+{
+    myMembers.emplace_back(
+        std::make_unique&lt;MetaMember&lt;ClassType, MemberType&gt;&gt;(aName, aMember)
+    );
+    return *this;
+}
                     </code>
                 </pre> 
                 <p class="pa">
@@ -127,17 +148,18 @@
             </p>
             <pre>
                 <code class="language-cpp">
-                    for (IMetaClass& type : MetaRegistry::Classes())
-                    {
-                        if (type.Contains(aRegistry, aSelectedEntity))
-                        {
-                            std::unique_ptr&lt;IMetaReference&gt; reference = type.CreateReference(aRegistry, aSelectedEntity);
-                            RenderWidget(reference, aRegistry, aSelectedEntity);
-                        }
-                    }
+for (IMetaClass& type : MetaRegistry::Classes())
+{
+    if (type.Contains(aRegistry, aSelectedEntity))
+    {
+        std::unique_ptr&lt;IMetaReference&gt; reference = type.CreateReference(aRegistry, aSelectedEntity);
+        RenderWidget(reference, aRegistry, aSelectedEntity);
+    }
+}
                 </code>
             </pre>
 
+            <a class="anchor" id="creating-references"></a>
             <h2>Creating references to members</h2>
             <p class="pa">
                 In the above example, i use the method CreateReference, this
@@ -163,12 +185,12 @@
             </p>
             <pre>
                 <code class="language-cpp">
-                    std::unique_ptr&lt;IMetaReference&gt; CreateReference(IMetaReference& aParentClass)
-                    {
-                        ClassType& parent = *static_cast&lt;MetaReference&lt;ClassType&gt;&amp;&gt;(aParent).GetReference();
-                        return std::make_unique&lt;MetaReference&lt;MemberType&gt;&gt;(parent.*memberPointer, GetName());
-                    }
-                    MemberType ClassType::* memberPointer;
+std::unique_ptr&lt;IMetaReference&gt; CreateReference(IMetaReference& aParentClass)
+{
+    ClassType& parent = *static_cast&lt;MetaReference&lt;ClassType&gt;&amp;&gt;(aParent).GetReference();
+    return std::make_unique&lt;MetaReference&lt;MemberType&gt;&gt;(parent.*myMemberPointer, GetName());
+}
+MemberType ClassType::* myMemberPointer;
                 </code>
             </pre>
             <p class="pa">
@@ -179,6 +201,7 @@
                 store and operate on them without knowing their types at compile-time.
             </p>
 
+            <a class="anchor" id="iteration-rendering"></a>
             <h2>Iterating and rendering the members</h2>
             <h3>The first approach</h3>
             <p class="pa">
@@ -193,23 +216,23 @@
             </p>
                 <pre>
                     <code class="language-cpp">
-                        void RenderWidget(IMetaReference& aReference)
-                        {
-                            ImGui::Text(aReference.GetName());
-                            if (HasKnownEditingFunction(aReference))
-                            {
-                                EditType(aReference);
-                                return;
-                            }
+void RenderWidget(IMetaReference& aReference)
+{
+    ImGui::Text(aReference.GetName());
+    if (HasKnownEditingFunction(aReference))
+    {
+        EditType(aReference);
+        return;
+    }
 
-                            ImGui::Indent();
-                            for (IMetaMember& memberType : aReference.GetMembers())
-                            {
-                                std::unique_ptr&lt;IMetaReference&gt; memberReference = member.CreateReference(aReference);
-                                RenderWidget(memberReference);
-                            }
-                            ImGui::Unindent();
-                        }
+    ImGui::Indent();
+    for (IMetaMember& memberType : aReference.GetMembers())
+    {
+        std::unique_ptr&lt;IMetaReference&gt; memberReference = member.CreateReference(aReference);
+        RenderWidget(memberReference);
+    }
+    ImGui::Unindent();
+}
                     </code>
                 </pre>
             <p class="pa">
@@ -240,77 +263,77 @@
             </p>
             <pre>
                 <code class="language-cpp">
-                    class EditorVisitor : public MetaVisitor
-                    {
-                        void Accept(IMetaReference& aReference) const override
-                        {
-                            ImGui::Text(aReference.GetName());
-                            if (HasKnownEditingFunction(aReference))
-                            {
-                                EditType(aReference);
-                            }
-                            else
-                            {
-                                ImGui::Indent();
-                                for (IMetaMember& memberType : aReferece.GetMembers())
-                                {
-                                    std::unique_ptr&lt;IMetaReference&gt; memberReference = memberType.CreateReference(aReference);
-                                    memberReference->Visit(*this);
-                                }
-                                ImGui::Unintent();
-                            }
-                                
-                        }
-                    };
+class EditorVisitor : public MetaVisitor
+{
+    void Accept(IMetaReference& aReference) const override
+    {
+        ImGui::Text(aReference.GetName());
+        if (HasKnownEditingFunction(aReference))
+        {
+            EditType(aReference);
+        }
+        else
+        {
+            ImGui::Indent();
+            for (IMetaMember& memberType : aReferece.GetMembers())
+            {
+                std::unique_ptr&lt;IMetaReference&gt; memberReference = memberType.CreateReference(aReference);
+                memberReference->Visit(*this);
+            }
+            ImGui::Unintent();
+        }
+            
+    }
+};
 
-                    EditorVisitor visitor;
-                    for (IMetaClass& type : MetaRegistry::Classes())
-                    {
-                        if (type.Contains(aRegistry, aSelectedEntity))
-                        {
-                            std::unique_ptr&lt;IMetaReference&gt; reference = type.CreateReference(aRegistry, aSelectedEntity);
-                            reference->Visit(visitor);
-                        }
-                    }
+EditorVisitor visitor;
+for (IMetaClass& type : MetaRegistry::Classes())
+{
+    if (type.Contains(aRegistry, aSelectedEntity))
+    {
+        std::unique_ptr&lt;IMetaReference&gt; reference = type.CreateReference(aRegistry, aSelectedEntity);
+        visitor.Visit(*reference);
+    }
+}
                 </code>
             </pre>
 
             <h3>The default case</h3>
             <pre>
                 <code class="language-cpp">
-                    template &lt;typename T&gt;
-                    class MetaReference : public IMetaReference
-                    {
-                    public:
-                        void Accept(MetaVisitor& aVisitor) override
-                        {
-                            aVisitor.Accept(*this);
-                        }
-                    private:
-                        T* myReference;
-                    };
+template &lt;typename T&gt;
+class MetaReference : public IMetaReference
+{
+public:
+    void Accept(MetaVisitor& aVisitor) override
+    {
+        aVisitor.Accept(*this);
+    }
+private:
+    T* myReference;
+};
                 </code>
             </pre>
 
             <h3>A template specializaton of vector</h3>
             <pre>
                 <code class="language-cpp">
-                    template &lt;typename T&gt;
-                    class MetaReference&lt;std::vector&lt;T&gt;&gt; : public IMetaReference
-                    {
-                    public:
-                        void Accept(MetaVisitor& aVisitor) override
-                        {
-                            for (size_t i = 0; i < myReference->size(); ++i)
-                            {
-                                std::string name = std::to_string(i);
-                                MetaReference&lt;T&gt; elem((*myReference)[i], name.c_str());
-                                elem.Visit(aVisitor);
-                            }
-                        }
-                    private:
-                        std::vector&lt;T&gt;* myReference;
-                    };
+template &lt;typename T&gt;
+class MetaReference&lt;std::vector&lt;T&gt;&gt; : public IMetaReference
+{
+public:
+    void Accept(MetaVisitor& aVisitor) override
+    {
+        for (size_t i = 0; i < myReference->size(); ++i)
+        {
+            std::string name = std::to_string(i);
+            MetaReference&lt;T&gt; elem((*myReference)[i], name.c_str());
+            aVisitor.Accept(elem);
+        }
+    }
+private:
+    std::vector&lt;T&gt;* myReference;
+};
                 </code>
             </pre>
 
@@ -321,14 +344,14 @@
                 without it's shortcomings.
             </p>
 
-            Some things i would like to improve include:
+            Some things I would like to improve include:
             <ul>
                 <li>
                     Refactorization: the systems has gone through 
                     multiple iterations and could use some cleanup
                 </li>
                 <li>
-                    Support for member functions, this is teoretically not that much more work
+                    Support for member functions, this is theoretically not that much more work
                     and would be a nice addition.
                 </li>
                 <li>
@@ -341,26 +364,24 @@
                 </li>
             </ul>
             <h3> That was a lot of details, let's see it in action!</h3>
-            <div class="grid-parent">
-                <div class="slides">
+            <div class="grid-parent" style="height: 100%">
+                <div class="slides" style="height: 100%; align-items: center;">
                     <div class="slide">
-                        <img src="../content/spite/screenshot01.png" alt="spite">
+                        <h3>All boilerplate the user needs to write for a type this complex </h3>
+                        <img src="../content/reflection/example-registration.png" alt="registration" style="width: 100%; height: auto; background-size: cover; float: left;">
                     </div>
                     <div class="slide">
-                        <img src="../content/spite/screenshot03.png" alt="spite">
+                        <h3>The generated inspector GUI</h3>
+                        <img src="../content/reflection/example-component-result2.png" alt="generated gui" style="width: 100%; height: auto; background-size: cover; float: left;">
                     </div>
                     <div class="slide">
-                        <img src="../content/spite/screenshot02.png" alt="spite">
-                    </div>
-                    <div class="slide">
-                        <img src="../content/spite/screenshot04.png" alt="spite">
+                        <h3> Adding custom rendering for a type </h3>
+                        <img src="../content/reflection/texture-custom-rendering.png" alt="custom rendering support" style="width: 100%; height: auto; background-size: cover; float: left;">
                     </div>
                     <a class="prev" onclick="nextSlide(this, -1)"><i class='bx bx-chevron-left'></i></a>
                     <a class="next" onclick="nextSlide(this, 1)"><i class='bx bx-chevron-right'></i></a>
                 </div>
             </div>
-           
-
         </div>
     </section>
 </body>
