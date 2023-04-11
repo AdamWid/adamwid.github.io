@@ -47,29 +47,29 @@
 
              <!-- why i wanted to make a entity component system -->
             <p class="pa">
-                While working on game project 4 and 5, I had made a component system that we were using. 
-                This component system was easy to work in and translated very well to how Unity works 
+                While working on game projects 4 and 5, I made a component system that we were using. 
+                This component system was easy to work with and translated very well to how Unity works,
                 which was useful as we used Unity as a level editor. but had some limitations I wanted to solve
-                going into project 6 when we were building our own game engine.
+                going into Project 6 when we were building our own game engine.
                 <br>
                 <br>
                 Some limitations I wanted to solve included:
                 <ul>
                     <li>
                     All components having behavior implemented through virtual functions,
-                    even when the component had no logic attached to it
+                    even when the component had no logic attached to it,
                     </li>
-                    <li>All components needing to be allocated separatly, increasing memory segmentation & cache misses</li>
-                    <li>No easy way to iterate all objects with a specific component, for example a MeshComponent for rendering</li>
+                    <li>All components needing to be allocated separately, increasing memory segmentation and cache misses.</li>
+                    <li>No easy way to iterate all objects with a specific component, for example, a MeshComponent for rendering.</li>
                 </ul>                
             </p>
 
             <!-- what a entity component system is and how it solves the presented problems -->
             <p class="pa">
-                Entity component systems seemed to be the most appropriate solution to these concerns,
-                They work similarly to components systems in the way that behaviour is defined at runtime with components.
-                But instead of defining behaviour with virtual functions, you iterate through
-                a whole array of components in a system doing the work you want.
+                Entity component systems seemed to be the most appropriate solution to these concerns.
+                They work similarly to component systems in the way that behavior is defined at runtime with components.
+                But instead of defining behavior with virtual functions, you iterate through
+                a whole array of components in a <i>system</i> to do the work you want.
             </p>
 
             <!-- entity component system benefits -->
@@ -77,25 +77,25 @@
                 <h2> Benefits of entity component systems </h2>
                 <p class="pa">
                     Entity component systems offer several benefits over
-                    other models such as object oriented design,
-                    one main benefit is the concept of composition instead of inheritance. 
+                    other models, such as object-oriented design.
+                    One main benefit is the concept of <span class="colored">composition over inheritance</span>. 
                     Instead of having to keep track of a potentially deep and complex 
-                    inheritance hierarchy which could lead to expensive refactors,
-                    it is possible to separate behavior into components which can be removed and added
+                    inheritance hierarchy, which could lead to expensive refactors,
+                    it is possible to separate behavior into components, which can be removed from and added
                     to an entity at any time.
                 </p>
 
                 <div class="grid-parent">
                     <p class="pa">
-                        Another main benefit is performance, 
-                        imagine a scenario where you want to iterate all objects and move 
+                        Another main benefit is performance. 
+                        Imagine a scenario where you want to iterate over all objects and move 
                         them according to some velocity.
-                        if all data related to the position of an object lived in contiguous 
-                        memory you could make much better use of the cpu cache and your memory bandwidth.  
+                        If all data related to the position of an object lived in contiguous 
+                        memory, you could make much better use of the CPU cache and your memory bandwidth.  
                     </p>
                     <div>
                         <pre>
-                            <h4 style="margin-bottom: 0; padding-bottom: 0;" class="colored">Example memory layout in a data oriented game</h4>
+                            <h4 style="margin-bottom: 0; padding-bottom: 0;" class="colored">Example memory layout in a data-oriented game</h4>
                             <code class="language-cpp">
 class Foo
 {
@@ -110,13 +110,13 @@ class Foo
                 
                 <div class="grid-parent">
                     <p class="pa">
-                        when fetching the memory for the position in class Bar, a cache-line worth of memory
-                        after it would get loaded as well instead of the position of the next object we want to manipulate. 
+                        When fetching the memory for the position in class Bar, a cache-line's worth of memory
+                        would also get loaded instead of the position of the next object we wanted to manipulate. 
                         terribly wasteful.
                     </p>
     
                     <pre>
-                        <h4 style="margin-bottom: 0; padding-bottom: 0;" class="colored">Example memory layout in a object-oriented game</h4>
+                        <h4 style="margin-bottom: 0; padding-bottom: 0;" class="colored">Example memory layout in an object-oriented game</h4>
                         <code class="language-cpp">
 class Bar
 {
@@ -143,8 +143,8 @@ class Bar
             <h2>Design</h2>
             <p class="pa">
                 I was unsure how I wanted the interface to look, so I decided to look around at existing entity component systems,
-                and after some research I found <a class="link" href="https://github.com/skypjack/entt">entt</a>. 
-                Since I really liked the interface and features <i>entt</i> provided and I thought
+                and after some research, I found <a class="link" href="https://github.com/skypjack/entt">entt</a>. 
+                Since I really liked the interface and features <i>entt</i> provided and thought
                 it would be a good challenge, I set out to replicate its features as best I could.
 
             </p>
@@ -173,18 +173,18 @@ void Destroy(Entity aEntity)
             <p class="pa">
                 Entities are implemented as a simple ID, 
                 destroyed entities are stored in a binary heap, 
-                making creating a new entity O(log N) where N is the number of previously destroyed entities. 
-                this is done to ensure we always use the smallest possible entity ID's we can.
+                making creating a new entity O(log N), where N is the number of previously destroyed entities. 
+                This is done to ensure we always use the smallest possible entity IDs we can.
             </p>
             
 
             <h3> Components </h3>
 
             <p class="pa">
-                Components are any templated type you want,
+                Components are any type you want.
                 They are stored internally in a templated class called <span class="colored">Container</span>.
-                <span class="colored">Container</span> always keeps components aligned in an internal array, this is done
-                by using a sparse and dense array that maps entity ID's to the dense component array.
+                Container always keep components aligned in an internal array, this is done
+                by using a sparse and dense array that maps entity IDs to the dense component array.
             </p>
 
             <pre>
@@ -219,11 +219,11 @@ void Remove(Entity aEntity)
             
             <h3> Iterating through entities </h3>
             <p class="pa">
-                In <span class="colored"><i>entt</i></span> there is a concept of a <span class="colored"><i>view</i></span> 
-                this was probably one of the more tricky features to implement.
+                In <span class="colored"><i>entt</i></span> there is a concept of a <span class="colored"><i>view,</i></span> 
+                this was probably one of the trickier features to implement.
                 Views are a way to specify a variadic list of component types and iterate through all entities that own that set of components.
-                views can also be given a variadic list of <span class="colored"><i>excludes</i></span> that stops the view from 
-                returning any entity which has any component that is excluded.
+                Views can also be given a variadic list of <span class="colored"><i>excludes</i></span> that stops the view from 
+                returning any entity that has any component that is excluded.
             </p>
             <pre>
                 <code class="language-cpp">
@@ -237,11 +237,11 @@ TypeView&lt;TList&lt;T1, Types...&gt;, TList&lt;Excludes...&gt;&gt; View(ecs::Ex
             </pre>
             <p class="pa">
                 The view's iterator works by finding the smallest container in the list, 
-                iterating that container's entities and testing the other containers 
-                in the list if they contain the current entity too. If they do we can return the entity as a valid entity.
+                iterating that container's entities, and testing the other containers 
+                in the list to see if they contain the current entity too. If they do, we can return the entity as a valid entity.
             </p>
             <p class="pa">
-                Below is an example usage how a view is used in our engine to couple physx colliders with our collider-components.
+                Below is an example of how a view is used in our engine to couple physx colliders with our transforms.
                 This example showcases the second iterator that uses structured bindings with an <span class="colored"><i>std::tuple</i></span>
             </p>
             <pre>
@@ -257,8 +257,8 @@ for (auto&amp;&amp; [entity, transform, collider] : view.Each()) // using struct
 
             <h2> That's it! </h2>
             <p class="pa">
-                I'm overall very pleased with how the system turned out, and has been used to a great extent in our engine.
-                There are a lot of features and details omitted here but i have included the source code for those interested. (Compiles with C++17)
+                I'm overall very pleased with how the system turned out and has been used to a great extent in our engine.
+                There are a lot of features and details omitted here but i have included the source code for those interested.
             </p>
             <a class="link" href="https://github.com/adamwid/ecs">Source</a>
         </div>

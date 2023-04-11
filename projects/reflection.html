@@ -37,7 +37,7 @@
                 <div>
                     <p class="pa">
                         During game project 7 we had a need to view and edit components from our editor, 
-                        and since we ideally wanted to keep our editor/game projects separated which meant no component-specific code, 
+                        and since we ideally wanted to keep our editor and game projects separate, which meant no component-specific code, 
                         I was tasked with making a reflection system.
                     </p>
                     <ul>
@@ -60,15 +60,15 @@
             <p class="pa">
                 In programming, reflection refers to the ability of a 
                 program to examine and modify its own structure and behavior at runtime.
-                Some languages like <span class="colored">C#</span> and <span class="colored">Java</span> 
-                support reflection nativly. this enables them to support features
-                like automatic serialization/deserialization or creating objects from names.
+                Some languages, like <span class="colored">C#</span> and <span class="colored">Java</span>,
+                support reflection natively. This enables them to support features
+                like automatic serialization and deserialization or creating objects from names.
                 <br>
 
-                However, one of the core ideas of C++ is that 
+                However, one of the core ideas of C++ is that
                 <span class="colored"> you only pay for what you use.</span>
                 For reflection this means that any metadata of the program's original structure 
-                is lost during compilation and it's up to the programmer to implement
+                is lost during compilation, and it's up to the programmer to implement
                 any features needed to support reflection.
 
                 <!-- In programming, reflection refers to the ability of a 
@@ -83,12 +83,12 @@
             </p>
 
             <p class="pa">
-                Some of my goals with the reflection system besides providing a 
+                Some of my goals with the reflection system, besides providing a 
                 way to edit components outside of the <i>editor</i> was:
             </p>
             <ul>
                 <li> No extra data stored on components, copying and moving components had to remain fast. </li>
-                <li> No need to inherit from any classes to support reflection for that type </li>
+                <li> No need to inherit from any classes to support reflection for that type. </li>
                 <li> Support for common stl-containers like <span class="colored">vector</span> and <span class="colored">unordered_map</span> </li>
             </ul>
 
@@ -96,9 +96,9 @@
             <h2>Registration</h2>
             <p class="pa">
                 With the first requirement in mind, I decided on creating a registry to store the data, 
-                a class with static methods where you register a type's members once at the start of the program, 
-                and can then later be globally used to query type information 
-                by using for example the registered name or an instance of the object.
+                a class with static methods where you register a type's members once at the start of the program 
+                and can then be later globally used to query type information 
+                by using, for example, the registered name or an instance of the object.
             </p>
             <p class="pa">
                 The registration of a type is done in the following manner:
@@ -113,10 +113,10 @@ MetaRegistry::RegisterClass&lt;Foo&gt;("Foo")
             <p class="pa">
                 As all registered classes are templated, they inherit from the common class
                 <span class="colored">IMetaClass</span>. This class is an interface that
-                allow us to query a given type without knowing the type that is reflected.
+                allows us to query a given type without knowing the type that is reflected.
                 <br>
-                Registering members of a class is similar, however 
-                they are stored on each class and is done by utilizing 
+                Registering members of a class is similar, however,
+                they are stored on each class and are done by utilizing 
                 the <span class="colored"><i>pointers to members</i></span> syntax. The implementation of 
                 <span class="colored">RegisterMember</span> looks like the following:
                 <pre>
@@ -140,10 +140,10 @@ MetaClass& RegisterMember(const char* aName, MemberType ClassType::* aMember)
             <h2>How I needed the reflection system</h2>
             <p class="pa">
                 As this system was intended mostly as a way to edit components 
-                from an <span class="colored">inspector</span>, I needed a way to to check if
+                from an <span class="colored">inspector</span>, I needed a way to check if
                 an entity in our <a class="link" href="../projects/ecs.html">entity component system</a> 
-                contained any reflectable types, the way i chose to meet this requirement
-                was by iterating all reflected types, then calling a virtual function 
+                contained any reflectable types. The way I chose to meet this requirement
+                was by iterating all reflectable types, then calling a virtual function 
                 that returns true if the selected entity owns a component of the current type.
             </p>
             <pre>
@@ -162,23 +162,23 @@ for (IMetaClass& type : MetaRegistry::Classes())
             <a class="anchor" id="creating-references"></a>
             <h2>Creating references to members</h2>
             <p class="pa">
-                In the above example, i use the method CreateReference, this
+                In the above example, I use the method CreateReference. This
                 method is simply a virtual function that gets the object out of our 
                 entity component system and stores it as a pointer in the 
-                <span class="colored">MetaReference</span>-class.
+                <span class="colored">MetaReference</span> class.
                 <br>
                 <br>
             </p>
 
             <p class="pa">    
-                The MetaMember class however currently just stores
-                a <i>Pointer to a member</i> which looks like 
+                The MetaMember class, however, currently just stores
+                a <i>pointer to a member</i>, which looks like 
                 <span class="colored">MemberType ClassType::*</span>. 
                 This is not a normal pointer, we need an instance of <span class="colored">ClassType</span>
-                to dereference it. Luckily since we already store a reference to the
-                <i>ClassType</i>-object, and <i>ClassType</i> is a known type in
-                the <span class="colored">MetaMember</span>-class we can 
-                cast the type-erased reference back into it's real type.
+                to dereference it. Luckily, since we already store a reference to the
+                <i>ClassType</i>-object and <i>ClassType</i> is a known type in
+                the <span class="colored">MetaMember</span>-class, we can 
+                cast the type-erased reference back into its real type.
                 <br>
                 <br>
                 This allows us to create references to members of classes as well.
@@ -196,7 +196,7 @@ MemberType ClassType::* myMemberPointer;
             <p class="pa">
                 Casting type-erased interface classes back into 
                 their templated derived class through virtual functions like this is 
-                something i have utilized heavily in this
+                something I have heavily utilized in this
                 system. And while not very pretty, it's needed as I need to 
                 store and operate on them without knowing their types at compile-time.
             </p>
@@ -206,8 +206,8 @@ MemberType ClassType::* myMemberPointer;
             <h3>The first approach</h3>
             <p class="pa">
                 My first approach to rendering through a given type's members was done 
-                by looping through all members of the current type each recursive call, and when
-                encountering a type that's known, for example fundamental types like 
+                by iterating through all members of the current type with each recursive call, and when
+                encountering a type that's known, for example, fundamental types such as 
                 <span class="colored">int</span> and <span class="colored">float</span>,
                 I called the appropriate function to handle that type.
                 <br>
@@ -236,18 +236,18 @@ void RenderWidget(IMetaReference& aReference)
                     </code>
                 </pre>
             <p class="pa">
-                However this method was flawed in that it both required 
-                quite a few heap-allocations more than might be nesscesary,
+                However, this method was flawed in that it both required 
+                quite a few heap allocations more than might be necessary,
                 but more importantly, it was flawed in the way that
                 it wasn't possible to loop through the members of
-                templated stl-types like vector or a more difficult example, tuples.
+                templated stl-types like vector or, for a more difficult example, tuples.
                 Not without registering each possible instantiation of that type.
             </p>
             <h3>The second approach</h3>
             <p class="pa">
                 After scratching my head for a while and trying different
                 solutions to the problems with the first method, I finally tried
-                to utilize the <span class="colored"><i>Visitor pattern</i></span>.
+                to utilize the <span class="colored"><i>visitor pattern</i></span>.
 
                 <br>
                 The visitor pattern approach allowed me to specialize 
@@ -255,10 +255,10 @@ void RenderWidget(IMetaReference& aReference)
                 template specialization of the MetaReference class. While this is not
                 a perfect solution, it allows me to iterate through types that would
                 otherwise be impossible without an explicit registration 
-                of that type and it's exact template parameters.
+                of that type and its exact template parameters.
                 <br>
                 <br>
-                The editor now inherits from a <i>Visitor</i> class
+                The editor now inherits from a <i>Visitor</i> class,
                 and the iteration is updated like the following example:
             </p>
             <pre>
@@ -315,7 +315,7 @@ private:
                 </code>
             </pre>
 
-            <h3>A template specializaton of vector</h3>
+            <h3>A template specialization of vector</h3>
             <pre>
                 <code class="language-cpp">
 template &lt;typename T&gt;
@@ -340,11 +340,11 @@ private:
             <h2>Results</h2>
             <p class="pa">
                 Utilizing templates like this allowed the reflection system
-                to become very flexible, and support almost any type with minimal effort. But it's not 
+                to become very flexible and support almost any type with minimal effort. But it's not 
                 without it's shortcomings.
             </p>
 
-            Some things I would like to improve include:
+            Some things I would like to improve or add include:
             <ul>
                 <li>
                     Refactorization: the systems has gone through 
@@ -365,9 +365,9 @@ private:
             </ul>
             <h3> That was a lot of details, let's see it in action!</h3>
             <div class="grid-parent" style="height: 100%">
-                <div class="slides" style="height: 100%; align-items: center;">
+                <div class="slides">
                     <div class="slide">
-                        <h3>All boilerplate the user needs to write for a type this complex </h3>
+                        <h3>All the boilerplate a user needs to write for a type this complex </h3>
                         <img src="../content/reflection/example-registration.png" alt="registration" style="width: 100%; height: auto; background-size: cover; float: left;">
                     </div>
                     <div class="slide">
