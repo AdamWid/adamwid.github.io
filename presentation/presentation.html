@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Presentation</title>
+
+		<link rel="stylesheet" href="../external/reveal.js/dist/reset.css">
+		<link rel="stylesheet" href="../external/reveal.js/dist/reveal.css">
+		<link rel="stylesheet" href="../external/reveal.js/dist/theme/black.css">
+
+		<!-- Theme used for syntax highlighted code -->
+		<link rel="stylesheet" href="../external/reveal.js/plugin/highlight/monokai.css">
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+					<h1>entiteter, komponenter och system</h1>
+				</section>
+				<section>
+					<h3>Vad presentationen går igenom</h3>
+					<ul>
+						<li class="fragment">The what, vad är ett entity component system?</li>
+						<li class="fragment">The why, varför skulle vi vilja använda det?</li>
+						<li class="fragment">The how, hur gör jag mitt eget?</li>
+					</ul>
+				</section>
+				<section>
+					<h3>Vad är ett entity component system?</h3>
+					<ul>
+						<li>En dynamisk beskrivning av objekt i spelvärlden</li>
+						<li>Arkitektur och designmönster</li>
+						<li>Dataorienterad design</li>
+					</ul>
+				</section>
+				<section>
+					<h3>Entititer</h3>
+					<ul>
+						<li>
+							Entititer representerar ett individuellt objekt i världen.
+							De är byggstenarna av ett ecs, och agerar som en samling av komponenter.
+						</li>
+						<li>
+							Likt GameObjects i Unity ni är vana med, men i ett ECS är 
+							entiteter bara ett unikt id, oftast implementerat som en unsigned int.
+						</li>
+						<li>
+							Dessa entiteter används som en nyckel till en associativ container, 
+							som kopplar entiteten till en komponent.
+						</li>
+					</ul>
+					
+				</section>
+				<section>
+					<h3>Komponenter</h3>
+					<ul>
+						<li>
+							Definerar beteende och egenskaper av en entitet.
+						</li>
+						<li>
+							Är oberoende och enkapsulerade.
+						</li>
+						<li>
+							Kan läggas till och tas bort från entiteter i runtime.
+						</li>
+					</ul>
+				</section>
+				<section>
+					<h3>System</h3>
+					<ul>
+						<li>
+							System har inget eget tillstånd, 
+							det utför beteendet som defineras av en uppsättning komponenter
+						</li>
+						<li>
+							Fokuserar på en specifik uppgift, 
+							ett system har ingen koppling till 
+							komponenter som inte berör den uppgiften.
+						</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Fördelar - Varför</h2>
+				</section>
+				<section>
+					<h3>Prestanda</h3>
+					<ul>
+						<li class="fragment">
+							Dataorientering, optimering för cache
+							<ul>
+								<li class="fragment">Komponenter av samma typ ligger på rad i minnet</li>
+								<li class="fragment">Iterering av komponenter kan göras linjärt</li>
+							</ul>
+						</li>
+						<li class="fragment">triviellt flertrådad arkitektur</li>
+					</ul>
+				</section>
+				<section>
+					<h3>Dataorientering - cache is king</h3>
+					<ul>
+						<li>Läsa minne från RAM är seeeegt, därför cachar vi ofta använt minne.</li>
+						<li>När minne väl läses från RAM görs det i storleken av en cache-line, typiskt sett 64 bytes på x86/x64</li>
+					</ul>
+					<br>
+					<br>
+					<h4>Med detta i åtanke vill vi:</h4>
+					<ul>
+						<li>Tänka på datan i strukturerna vi använder</li>
+						<li>Hur kan våra algoritmer och system optimera för cache</li>
+						<li>Undvika separata minnesallokeringar, allokera minne i chunks</li>
+					</ul>
+				</section>
+				<section>
+					<h3>Exempel - parallel arrays</h3>
+					<div class="fragment">
+						<h4>Objektorienterat</h4>
+						<pre><code data-trim data-noescape data-line-numbers="">							
+							struct AssociativeArray
+							{
+								Pair&lt;KeyType, ValueType&gt; myData[SIZE];
+							};
+						</code></pre>
+					</div>
+					<div class="fragment">
+						<h4>Dataorienterat</h4>
+						<pre><code data-trim data-noescape data-line-numbers="">							
+							struct AssociativeArray
+							{
+								KeyType myKeys[SIZE];
+								ValueType myValues[SIZE];
+							};
+						</code></pre>
+					</div>
+				</section>
+				<section>
+					<h4>Objektorienterat</h4>
+					<img src="media/AssociativeArray.png" alt="">
+					<h4>Dataorienterat</h4>
+					<img src="media/ParallelArraysScaled.png" alt="">
+				</section>
+				<section>
+
+					<h4>Quiz</h4>
+					<pre><code data-trim data-noescape data-line-numbers="">
+						template &lt;FirstType, SecondType&gt;						
+						struct Pair
+						{
+							FirstType myFirst;
+							SecondType mySecond;
+						};
+
+						std::cout &lt;&lt; "Pair&lt;char, int&gt; = " &lt;&lt;sizeof(Pair&lt;char, int&gt;) &lt;&lt; '\n';
+					</code></pre>
+					<p>Pair&lt;char, int&gt; = <span class="fragment">8</span></p>
+
+					<pre><code data-trim data-noescape data-line-numbers="">
+						struct MyStruct
+						{
+							char a;
+							int b;
+							char c;
+						};
+						std::cout &lt;&lt; sizeof(MyStruct) &lt;&lt; '\n';
+					</code></pre>
+					<p>MyStruct = <span class="fragment">12</span></p>
+
+					<pre><code data-trim data-noescape data-line-numbers="">
+						struct TheirStruct
+						{
+							int b;
+							char a;
+							char c;
+						};
+						std::cout &lt;&lt; sizeof(TheirStruct) &lt;&lt; '\n';
+					</code></pre>
+					<p>TheirStruct = <span class="fragment">8</span></p>
+
+				</section>
+				<section>
+					<h3>Multitrådning</h3>
+					eftersom system bara kan modifiera komponenterna de arbetar på, så kan vi vara säkra på
+					att 2 trådar inte kommer hamna i ett race condition.
+					<br>
+					<br>
+					Vi kan göra en graf av beroenden i våra system.
+				</section>
+				<section>
+					<img src="media/DependencyGraph.png" alt="">
+				</section>
+				<section>
+					<h3></h3>
+				</section>
+			</div>
+		</div>
+
+		<script src="../external/reveal.js/dist/reveal.js"></script>
+		<script src="../external/reveal.js/plugin/notes/notes.js"></script>
+		<script src="../external/reveal.js/plugin/markdown/markdown.js"></script>
+		<script src="../external/reveal.js/plugin/highlight/highlight.js"></script>
+		<script>
+			// More info about initialization & config:
+			// - https://revealjs.com/initialization/
+			// - https://revealjs.com/config/
+			Reveal.initialize({
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
+			});
+		</script>
+	</body>
+</html>
