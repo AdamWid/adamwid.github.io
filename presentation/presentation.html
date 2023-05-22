@@ -22,10 +22,61 @@
 				<section>
 					<h3>Vad presentationen går igenom</h3>
 					<ul>
+						<li class="fragment">Andra modeller för att definera objekt i spelvärlden</li>
 						<li class="fragment">The what, vad är ett entity component system?</li>
 						<li class="fragment">The why, varför skulle vi vilja använda det?</li>
 						<li class="fragment">The how, hur gör jag mitt eget?</li>
 					</ul>
+				</section>
+				<section>
+					<h3>Arvsmodellen</h3>
+					<ul>
+						<li>Objekt defineras statiskt i dess arvshierarki</li>
+					</ul>
+				</section>
+				<section>
+					bild på arvshierarki
+				</section>
+				<section>
+					<h3>GameObject-component modell</h3>
+					<ul>
+						<li>Används av Unity</li>
+						<li>Objekt defineras i runtime av sina komponenter</li>
+						<li>Beteende defineras med virtuella funktioner</li>
+					</ul>
+				</section>
+				<section>
+					bild på unity
+				</section>
+				<section>
+					<h4>Pseudokod</h4>
+					<pre><code data-trim data-noescape data-line-numbers="">							
+						class Component
+						{
+						public:
+							virtual void Update(GameObject* aOwner, float aDT) = 0;
+						};
+
+						void GameObject::Update(float aDT)
+						{
+							for (Component* component : myComponents)
+								component->Update(this, aDT);
+						}
+
+						void Scene::Update(float aDT)
+						{
+							for (GameObject* gameObject : myGameObjects)
+								gameOject->Update(aDT);
+						}
+
+						void PlayerComponent::Update(GameObject* aOwner, foat aDT)
+						{
+							if (Input::Left())
+								aOwner->myPosition += Vector2(-1,0) * mySpeed * aDT;
+							if (Input::Right())
+								aOwner->myPosition += Vector2(1,0) * mySpeed * aDT;
+						}
+					</code></pre>
 				</section>
 				<section>
 					<h3>Vad är ett entity component system?</h3>
@@ -190,7 +241,16 @@
 					<img src="media/DependencyGraph.png" alt="">
 				</section>
 				<section>
-					<h3></h3>
+					<h3>Kod</h3>
+				</section>
+				<section>
+					Entity, skapandet av entiteter
+				</section>
+				<section>
+					Component array
+				</section>
+				<section>
+					
 				</section>
 			</div>
 		</div>
