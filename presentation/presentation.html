@@ -12,6 +12,7 @@
 
 		<!-- Theme used for syntax highlighted code -->
 		<link rel="stylesheet" href="../external/reveal.js/plugin/highlight/monokai.css">
+		<link rel="stylesheet" href="style.css">
 	</head>
 	<body>
 		<div class="reveal">
@@ -29,28 +30,32 @@
 					</ul>
 				</section>
 				<section>
-					<h3>Arvsmodellen</h3>
+					<h3>Arvsmodellen 💩</h3>
 					<ul>
 						<li>Objekt defineras statiskt i dess arvshierarki</li>
+						<li>Leder lätt till blobbar och refaktoriseringar</li>
+						<li>Svårt för att optimera för hög prestanda</li>
 					</ul>
 				</section>
 				<section>
-					bild på arvshierarki
+					<img src="media/object-heirarchy.png" alt="">
 				</section>
 				<section>
 					<h3>GameObject-component modell</h3>
 					<ul>
-						<li>Används av Unity</li>
+						<li>Används av spelmotorer som Unity</li>
 						<li>Objekt defineras i runtime av sina komponenter</li>
 						<li>Beteende defineras med virtuella funktioner</li>
+						<li>Fortfarande svårt att optimera för hög prestanda</li>
 					</ul>
+					
 				</section>
 				<section>
-					bild på unity
+					<img src="media/unity_composes.jpg" alt="">
 				</section>
 				<section>
 					<h4>Pseudokod</h4>
-					<pre><code data-trim data-noescape data-line-numbers="">							
+					<pre><code data-trim data-noescape data-line-numbers="1-5|7-11|13-17|19-25">							
 						class Component
 						{
 						public:
@@ -136,7 +141,13 @@
 					<h2>Fördelar - Varför</h2>
 				</section>
 				<section>
-					<h3>Prestanda</h3>
+					<h3>Flexibilitet 🤸</h3>
+					<ul>
+						<li>Enkapsulering</li>
+					</ul>
+				</section>
+				<section>
+					<h3>Prestanda 🏃</h3>
 					<ul>
 						<li class="fragment">
 							Dataorientering, optimering för cache
@@ -151,12 +162,14 @@
 				<section>
 					<h3>Dataorientering - cache is king</h3>
 					<ul>
-						<li>Läsa minne från RAM är seeeegt, därför cachar vi ofta använt minne.</li>
+						<li>Läsa minne från RAM är 🐌, därför cachar vi ofta använt minne.</li>
 						<li>När minne väl läses från RAM görs det i storleken av en cache-line, typiskt sett 64 bytes på x86/x64</li>
 					</ul>
 					<br>
 					<br>
-					<h4>Med detta i åtanke vill vi:</h4>
+				</section>
+				<section>
+					<h4>Med detta i åtanke vill vi</h4>
 					<ul>
 						<li>Tänka på datan i strukturerna vi använder</li>
 						<li>Hur kan våra algoritmer och system optimera för cache</li>
@@ -194,63 +207,185 @@
 				<section>
 
 					<h4>Quiz</h4>
-					<pre><code data-trim data-noescape data-line-numbers="">
-						template &lt;FirstType, SecondType&gt;						
-						struct Pair
-						{
-							FirstType myFirst;
-							SecondType mySecond;
-						};
 
-						std::cout &lt;&lt; "Pair&lt;char, int&gt; = " &lt;&lt;sizeof(Pair&lt;char, int&gt;) &lt;&lt; '\n';
-					</code></pre>
-					<p>Pair&lt;char, int&gt; = <span class="fragment">8</span></p>
-
-					<pre><code data-trim data-noescape data-line-numbers="">
-						struct MyStruct
-						{
-							char a;
-							int b;
-							char c;
-						};
-						std::cout &lt;&lt; sizeof(MyStruct) &lt;&lt; '\n';
-					</code></pre>
-					<p>MyStruct = <span class="fragment">12</span></p>
-
-					<pre><code data-trim data-noescape data-line-numbers="">
-						struct TheirStruct
-						{
-							int b;
-							char a;
-							char c;
-						};
-						std::cout &lt;&lt; sizeof(TheirStruct) &lt;&lt; '\n';
-					</code></pre>
-					<p>TheirStruct = <span class="fragment">8</span></p>
+					<section>
+						<pre class=""><code data-trim data-noescape data-line-numbers="">					
+							struct Pair
+							{
+								char myFirst;
+								int mySecond;
+							};
+							std::cout &lt;&lt; sizeof(Pair) &lt;&lt; '\n';
+						</code></pre>
+						<p>Pair = <span class="fragment">8</span></p>
+					</section>
+					
+					<section>
+						<pre><code data-trim data-noescape data-line-numbers="">
+							struct MyStruct
+							{
+								char a;
+								int b;
+								char c;
+							};
+							std::cout &lt;&lt; sizeof(MyStruct) &lt;&lt; '\n';
+						</code></pre>
+						<p>MyStruct = <span class="fragment">12</span></p>
+	
+						<pre><code data-trim data-noescape data-line-numbers="">
+							struct TheirStruct
+							{
+								int b;
+								char a;
+								char c;
+							};
+							std::cout &lt;&lt; sizeof(TheirStruct) &lt;&lt; '\n';
+						</code></pre>
+						<p>TheirStruct = <span class="fragment">8</span></p>
+					</section>
+					
 
 				</section>
 				<section>
-					<h3>Multitrådning</h3>
+					<h4>Objektorienterat</h4>
+					<img src="media/AssociativeArrayGarbageMemory.png" alt="">
+					<h4>Dataorienterat</h4>
+					<img src="media/ParallelArraysScaled.png" alt="">
+				</section>
+				<!--
+					en cpu läser typiskt sett en WORD - 4 bytes åt gången,
+					går att aligna med #pragma pack(push, 1).
+
+					ifall minne inte ligger alignat till en word-storlek, kommer cpun behöva läsa in den i 2 register, 
+					sen shifta ihop minnet till ett.
+				-->
+				<section>
+					<h3>Trådning</h3>
 					eftersom system bara kan modifiera komponenterna de arbetar på, så kan vi vara säkra på
 					att 2 trådar inte kommer hamna i ett race condition.
-					<br>
-					<br>
-					Vi kan göra en graf av beroenden i våra system.
-				</section>
-				<section>
+					
+
 					<img src="media/DependencyGraph.png" alt="">
 				</section>
 				<section>
 					<h3>Kod</h3>
 				</section>
-				<section>
-					Entity, skapandet av entiteter
+				<section >
+					Entiteter, födelsen och döden
+					<pre><code data-trim data-noescape data-line-numbers="1-2|4-11|13-16">
+						#define MAX_ENTITIES 1000
+						using Entity = uint32_t;
+
+						Entity Create()
+						{
+							if (myFreeEntities.Size())
+							{
+								return myFreeEntities.Dequeue();
+							}
+							return myNext++;
+						}
+
+						void Remove(Entity aEntity)
+						{
+							myFreeEntities.Enqueue(aEntity);
+						}
+						Entity myNext = 0;
+						CommonUtilities::Heap&lt;Entity&gt; myFreeEntities;
+
+					</code></pre>
 				</section>
 				<section>
-					Component array
+					<h4>Komponenter</h4>
+					<ul>
+						<li>Vill vi behålla på rad i minnet</li>
+						<li>Det finns flera sätt att göra det</li>
+						<li>Vi använder en sparse-set liknande struktur</li>
+					</ul>
+					<img src="media/sparse-set-remove-item.png" alt="" style="max-width: 50%">
 				</section>
 				<section>
-					
+					<pre><code data-trim data-noescape data-line-numbers="56-60|5-14|16-27">
+						template &lt;typename T&gt;
+						class ComponentArray
+						{
+						public:
+							T& Add(Entity aEntity)
+							{
+								assert(!Contains(aEntity));
+								myDense[mySize] = aEntity;
+								mySparse[aEntity] = mySize;
+								myComponents[mySize] = T();
+								++mySize;
+							
+								return myComponents[mySize-1];
+							}
+
+							void Remove(Entity aEntity)
+							{
+								assert(Contains(aEntity));
+								
+								Entity denseIndex = mySparse[aEntity];
+
+								--mySize;
+								std::swap(myComponents[mySize], myComponents[denseIndex]);
+								std::swap(myDense[mySize], myDense[denseIndex]);
+								mySparse[myDense[denseIndex]] = denseIndex;
+
+								T tmp = std::move(myComponents[mySize]);
+							}
+
+							bool Contains(Entity aEntity)
+							{
+								return aEntity < MAX_ENTITIES && mySparse[aEntity] < mySize && myDense[mySparse[aEntity]] == aEntity;
+							}
+
+							T& Get(Entity aEntity)
+							{
+								assert(Contains(aEntity));
+								return myComponents[mySparse[aEntity]];
+							}
+
+							T* GetComponents()
+							{
+								return myComponents;
+							}
+
+							Entity GetEntityByIndex(size_t aIndex)
+							{
+								return myDense[aIndex];
+							}
+
+							size_t Size()
+							{
+								return mySize;
+							}
+						private:
+							T myComponents[MAX_ENTITIES];
+							Entity myDense[MAX_ENTITIES];
+							Entity mySparse[MAX_ENTITIES];
+							size_t mySize = 0;
+						}
+					</code></pre>
+				</section>
+				<section>
+					Exempelsystem
+					<pre ><code data-trim data-noescape data-line-numbers="3-4,13|5|6-7|9-10,12" style="font-size:0.7em">
+						void Render(ComponentArray&lt;Model&gt;&amp; someModels, ComponentArray&lt;Transform&gt;&amp; someTransforms)
+						{
+							for (int i = 0; i < someModels.Size(); ++i)
+							{
+								Entity entity = someModels.GetEntityByIndex(i);
+								if (!someTransforms.Contains(entity))
+									continue;
+
+								Model&amp; model = someModels.Get(entity);
+								Transform&amp; transform = someTransforms.Get(entity);
+
+								RenderModel(model, transform);
+							}
+						}
+
+					</code></pre>
 				</section>
 			</div>
 		</div>
