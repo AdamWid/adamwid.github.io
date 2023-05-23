@@ -542,7 +542,8 @@
 							<pre class="fragment fade-out" data-fragment-index="0"><code data-trim data-noescape data-line-numbers="" style="font-size:0.7em">
 								void Render(Registry& aRegistry)
 								{
-									for (Entity entity : aRegistry.View&lt;SpriteComponent, Transform&gt;())
+									for (Entity entity : 
+									aRegistry.View&lt;SpriteComponent, Transform&gt;(Exclude&lt;ExcludeComponent&gt()))
 									{
 										SpriteComponent& sprite = aRegistry.Get&lt;SpriteComponent&gt;(entity);
 										TransformComponent& transform = aRegistry.Get&lt;TransformComponent&gt;(entity);
@@ -554,7 +555,7 @@
 								void Render(Registry& aRegistry)
 								{
 									for (auto&amp;&amp; [entity, sprite, transform] : 
-									aRegistry.View&lt;SpriteComponent, Transform&gt;().Each())
+									aRegistry.View&lt;SpriteComponent, Transform&gt;(ecs::Exclude&lt;ExcludeComponent&gt;).Each())
 									{
 										RenderSprite(sprite, transform);
 									}
