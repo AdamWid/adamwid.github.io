@@ -20,7 +20,7 @@
 				<section>
 					<h1>entiteter, komponenter och system</h1>
 				</section>
-				<section>
+				<!-- <section>
 					<h3>Vad presentationen går igenom</h3>
 					<ul>
 						<li class="fragment">Andra modeller för att definera objekt i spelvärlden</li>
@@ -28,39 +28,86 @@
 						<li class="fragment">The why, varför skulle vi vilja använda det?</li>
 						<li class="fragment">The how, hur gör jag mitt eget?</li>
 					</ul>
-				</section>
+				</section> -->
 				<section>
-					<h3>Arvsmodellen 💩</h3>
+					<h4>Innan vi snackar ECS</h4>
 					<ul>
-						<li>Objekt defineras statiskt i dess arvshierarki</li>
-						<li>Leder lätt till blobbar och refaktoriseringar</li>
-						<li>Svårt för att optimera för hög prestanda</li>
+						Kan det vara värt att beskriva andra modeller
 					</ul>
 				</section>
 				<section>
-					<img src="media/object-heirarchy.png" alt="">
+					<h3>Arvsmodellen</h3>
+					<ul>
+						<li class="fragment">Objekt defineras av deras relationer till andra objekt</li>
+						<li class="fragment">Objekts komposition defineras statiskt</li>
+						<li class="fragment">Leder lätt till blobbar och refaktoriseringar</li>
+						<li class="fragment">Svårt för att optimera för hög prestanda</li>
+					</ul>
 				</section>
 				<section>
-					<h3>GameObject-component modell</h3>
+					<img src="media/Hierarchies.jpg" alt="">
+				</section>
+				<section>
+					<h3>Statisk komposition</h3>
+					<pre><code data-trim data-noescape data-line-numbers="1-2|3-4|5-6|7|14-20">
+						class Renderable
+						{};
+						class Collidable : public Renderable 
+						{};
+						class Moveable : public Collidable 
+						{}
+						class Player : public Movable
+						{
+						public:
+							void Move(Vec3 someDistance);
+							void Update(float aDT);
+							void Render();
+						private:
+							Transform transform;
+							Model model;
+							Vec3 minBounds;
+							Vec3 maxBounds
+							float health;
+							float damage;
+						}
+
+					</code></pre>
+				</section>
+				<section>
+					<h3>GameObject-component model</h3>
 					<ul>
-						<li>Används av spelmotorer som Unity</li>
-						<li>Objekt defineras i runtime av sina komponenter</li>
-						<li>Beteende defineras med virtuella funktioner</li>
-						<li>Fortfarande svårt att optimera för hög prestanda</li>
+						<li class="fragment">Används av spelmotorer som Unity</li>
+						<li class="fragment">Objekts komposition defineras i runtime av sina komponenter</li>
+						<li class="fragment">Lätt att göra data-drivna spel - Kan lätt definera objekt i JSON</li>
+						<li class="fragment">Beteende implementeras med virtuella funktioner</li>
+						<li class="fragment">Fortfarande svårt att optimera för hög prestanda</li>
 					</ul>
 					
 				</section>
 				<section>
-					<img src="media/unity_composes.jpg" alt="">
+					<h3>Dynamisk komposition</h3>
+					<div class="r-stack">
+						<img class="fragment fade-out" data-fragment-index="0" src="media/Unity-Game-Objects-components.png" alt="">
+						<img class="fragment current-visible" data-fragment-index="0" src="media/RigidBodyGO1.png" alt="">
+					</div>
+					
 				</section>
 				<section>
 					<h4>Pseudokod</h4>
-					<pre><code data-trim data-noescape data-line-numbers="1-5|7-11|13-17|19-25">							
+					<pre><code data-trim data-noescape data-line-numbers="1-5|7-13|15-19|21-25|27-33">							
 						class Component
 						{
 						public:
 							virtual void Update(GameObject* aOwner, float aDT) = 0;
 						};
+
+						template &lt;typename T&gt;
+						T* GameObject::AddComponent()
+						{
+							T* component = new T();
+							myComponents.push_back(component);
+							return component;
+						}
 
 						void GameObject::Update(float aDT)
 						{
@@ -90,6 +137,9 @@
 						<li>Arkitektur och designmönster</li>
 						<li>Dataorienterad design</li>
 					</ul>
+				</section>
+				<section>
+					Termer
 				</section>
 				<section>
 					<h3>Entititer</h3>
@@ -163,7 +213,7 @@
 					<h3>Dataorientering - cache is king</h3>
 					<ul>
 						<li>Läsa minne från RAM är 🐌, därför cachar vi ofta använt minne.</li>
-						<li>När minne väl läses från RAM görs det i storleken av en cache-line, typiskt sett 64 bytes på x86/x64</li>
+						<li>När minne väl läses från RAM görs det i linjärt storleken av en cache-line, typiskt sett 64 bytes på x86/x64</li>
 					</ul>
 					<br>
 					<br>
@@ -172,7 +222,7 @@
 					<h4>Med detta i åtanke vill vi</h4>
 					<ul>
 						<li>Tänka på datan i strukturerna vi använder</li>
-						<li>Hur kan våra algoritmer och system optimera för cache</li>
+						<li>Ta vara på caching och läsa minne i rad</li>
 						<li>Undvika separata minnesallokeringar, allokera minne i chunks</li>
 					</ul>
 				</section>
@@ -189,8 +239,8 @@
 					</div>
 					<div class="fragment">
 						<h4>Dataorienterat</h4>
-						<pre><code data-trim data-noescape data-line-numbers="">							
-							struct AssociativeArray
+						<pre><code data-trim data-noescape data-line-numbers="">
+							struct AssociativeParalellArray
 							{
 								KeyType myKeys[SIZE];
 								ValueType myValues[SIZE];
@@ -205,8 +255,6 @@
 					<img src="media/ParallelArraysScaled.png" alt="">
 				</section>
 				<section>
-
-					<h4>Quiz</h4>
 
 					<section>
 						<pre class=""><code data-trim data-noescape data-line-numbers="">					
@@ -271,7 +319,7 @@
 					<h3>Kod</h3>
 				</section>
 				<section >
-					Entiteter, födelsen och döden
+					Entiteter
 					<pre><code data-trim data-noescape data-line-numbers="1-2|4-11|13-16">
 						#define MAX_ENTITIES 1000
 						using Entity = uint32_t;
@@ -297,11 +345,13 @@
 				<section>
 					<h4>Komponenter</h4>
 					<ul>
-						<li>Vill vi behålla på rad i minnet</li>
-						<li>Det finns flera sätt att göra det</li>
-						<li>Vi använder en sparse-set liknande struktur</li>
+						<li class="fragment">Associeras med en entitet</li>
+						<li class="fragment">Vill vi behålla på rad i minnet</li>
+						<li class="fragment">Det finns flera sätt att göra det</li>
+						<li class="fragment">Vi använder en sparse-set liknande struktur	</li>
 					</ul>
-					<img src="media/sparse-set-remove-item.png" alt="" style="max-width: 50%">
+					<img class="fragment" src="media/sparse-set-remove-item.png" alt="" style="max-width: 50%">
+					
 				</section>
 				<section>
 					<pre><code data-trim data-noescape data-line-numbers="56-60|5-14|16-27">
@@ -368,6 +418,20 @@
 					</code></pre>
 				</section>
 				<section>
+					Exempelanvändning
+					<pre ><code data-trim data-noescape data-line-numbers="" style="font-size:0.7em">
+						ComponentArray&lt;Transform&gt; transforms;
+						ComponentArray&lt;Model&gt; models;
+						ComponentArray&lt;Player&gt; player;
+
+						void InitGame()
+						{
+
+						}
+
+					</code></pre>
+				</section>
+				<section>
 					Exempelsystem
 					<pre ><code data-trim data-noescape data-line-numbers="3-4,13|5|6-7|9-10,12" style="font-size:0.7em">
 						void Render(ComponentArray&lt;Model&gt;&amp; someModels, ComponentArray&lt;Transform&gt;&amp; someTransforms)
@@ -381,6 +445,21 @@
 								Model&amp; model = someModels.Get(entity);
 								Transform&amp; transform = someTransforms.Get(entity);
 
+								RenderModel(model, transform);
+							}
+						}
+
+					</code></pre>
+				</section>
+				<section>
+					<h4>Med lite extra jobb</h4>
+					<pre class="reveal"><code data-trim data-noescape data-line-numbers="3,4,8|5,6" style="font-size:0.7em">
+						void Render(Registry& aRegistry)
+						{
+							for (Entity entity : aRegistry.View&lt;Model, Transform&gt;())
+							{
+								Model& model = aRegistry.Get&lt;Model&gt;(entity);
+								Transform& transform = aRegistry.Get&lt;Transform&gt;(entity);
 								RenderModel(model, transform);
 							}
 						}
