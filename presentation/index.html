@@ -32,7 +32,7 @@
 				<section>
 					<h4>Innan vi snackar ECS</h4>
 					<ul>
-						Kan det vara värt att beskriva andra modeller
+						Kan det vara värt att snacka andra modeller
 					</ul>
 				</section>
 				<section>
@@ -198,6 +198,7 @@
 					<ul>
 						<li class="fragment">Enkapsulering</li>
 						<li class="fragment">Lätt att lägga till och ta bort features</li>
+						<li class="fragment">Lös koppling mellan entiteter</li>
 					</ul>
 				</section>
 				<section>
@@ -221,18 +222,16 @@
 				<section>
 					<h3>Dataorientering - cache is king</h3>
 					<ul>
-						<li>Läsa minne från RAM är 🐌, därför cachar vi ofta använt minne.</li>
-						<li>När minne väl läses från RAM görs det i linjärt storleken av en cache-line, typiskt sett 64 bytes på x86/x64</li>
+						<li class="fragment">Läsa minne från RAM är 🐌, därför cachar vi ofta använt minne.</li>
+						<li class="fragment">När minne väl läses från RAM görs det i linjärt storleken av en cache-line, typiskt sett 64 bytes på x86/x64</li>
 					</ul>
-					<br>
-					<br>
 				</section>
 				<section>
 					<h4>Med detta i åtanke vill vi</h4>
 					<ul>
-						<li>Tänka på datan i strukturerna vi använder</li>
-						<li>Ta vara på caching och läsa minne i rad</li>
-						<li>Undvika separata minnesallokeringar, allokera minne i chunks</li>
+						<li class="fragment">Tänka på datan i strukturerna vi använder</li>
+						<li class="fragment">Ta vara på caching och läsa minne i rad</li>
+						<li class="fragment">Undvika separata minnesallokeringar, allokera minne i chunks</li>
 					</ul>
 				</section>
 				<section>
@@ -369,6 +368,7 @@
 					
 				</section>
 				<section>
+					ComponentArray
 					<pre><code data-trim data-noescape data-line-numbers="56-60|5-14|16-27">
 						template &lt;typename T&gt;
 						class ComponentArray
@@ -434,52 +434,137 @@
 				</section>
 				<section>
 					Exempelanvändning
-					<pre ><code data-trim data-noescape data-line-numbers="" style="font-size:0.7em">
-						ComponentArray&lt;Transform&gt; transforms;
-						ComponentArray&lt;Model&gt; models;
-						ComponentArray&lt;Player&gt; player;
-
-						void InitGame()
+				</section>
+				<section>
+					<pre ><code data-trim data-noescape data-line-numbers="1-12|13-16" style="font-size:0.7em">
+						struct TransformComponent
 						{
+							Tga::Vector2f position;
+						};
+						struct SpriteComponent
+						{
+							const Tga::TextureResource* texture = nullptr;
+						};
+						struct VelocityComponent
+						{
+							Tga::Vector2f vel;
+						};
+						Registry registry;
+						ComponentArray&lt;TransformComponent&gt; transforms;
+						ComponentArray&lt;SpriteComponent&gt; sprites;
+						ComponentArray&lt;VelocityComponent&gt; velocities;
 
+					</code></pre>
+				</section>
+				<section>
+					<pre ><code data-trim data-noescape data-line-numbers="10|11-12|13-14|15-16" style="font-size:0.7em">
+						void GameWorld::Init()  
+						{
+							auto& engine = *Tga::Engine::GetInstance();
+
+							Tga::Vector2ui intResolution = engine.GetRenderSize();
+							Tga::Vector2f resolution = { (float)intResolution.x, (float)intResolution.y };
+
+							for (int i = 0; i &lt; 10; ++i)
+							{
+								Entity entity = registry.Create();
+								TransformComponent& transform = transforms.Add(entity);
+								transform.position = Tga::Vector2f(RandomFloat(), RandomFloat());
+								SpriteComponent& sprite = sprites.Add(entity);
+								sprite.texture = engine.GetTextureManager().GetTexture(L"Sprites/tge_logo_w.dds");
+								VelocityComponent& velocity = velocities.Add(entity);
+								velocity.vel = Tga::Vector2f(RandomFloat(), RandomFloat()) * 0.1f;
+							}
 						}
-
 					</code></pre>
 				</section>
 				<section>
 					Exempelsystem
-					<pre ><code data-trim data-noescape data-line-numbers="3-4,13|5|6-7|9-10,12" style="font-size:0.7em">
-						void Render(ComponentArray&lt;Model&gt;&amp; someModels, ComponentArray&lt;Transform&gt;&amp; someTransforms)
-						{
-							for (int i = 0; i < someModels.Size(); ++i)
+					<pre ><code data-trim data-noescape data-line-numbers="1-2|4,5,14|6-8|10,11,13" style="font-size:0.7em">
+						void VelocitySystem(ComponentArray&lt;VelocityComponent&gt;& someVelocities, 
+								ComponentArray&lt;TransformComponent&gt;& someTransforms, float aDeltaTime)
 							{
-								Entity entity = someModels.GetEntityByIndex(i);
-								if (!someTransforms.Contains(entity))
-									continue;
-
-								Model&amp; model = someModels.Get(entity);
-								Transform&amp; transform = someTransforms.Get(entity);
-
-								RenderModel(model, transform);
+								for (int i = 0; i &lt; someVelocities.Size(); ++i)
+								{
+									Entity e = someVelocities.GetEntityByIndex(i);
+									if (!someTransforms.Contains(e))
+										continue;
+							
+									VelocityComponent& velocity = someVelocities.Get(e);
+									TransformComponent& transform = someTransforms.Get(e);
+							
+									transform.position += velocity.vel * aDeltaTime;
+								}
 							}
-						}
-
 					</code></pre>
 				</section>
 				<section>
-					<h4>Med lite extra jobb</h4>
-					<pre class="reveal"><code data-trim data-noescape data-line-numbers="3,4,8|5,6" style="font-size:0.7em">
-						void Render(Registry& aRegistry)
+					<pre ><code data-trim data-noescape data-line-numbers="1,2|10,11,29|16,17|19-23,25,26|28" style="font-size:0.7em">
+						void RenderSystem(ComponentArray&lt;priteComponent&gt;& someSprites, 
+										ComponentArray&lt;TransformComponent&gt;& someTransforms)
 						{
-							for (Entity entity : aRegistry.View&lt;Model, Transform&gt;())
+							auto& engine = *Tga::Engine::GetInstance();
+							Tga::SpriteDrawer& spriteDrawer(engine.GetGraphicsEngine().GetSpriteDrawer());
+							
+							Tga::Vector2ui intResolution = engine.GetRenderSize();
+							Tga::Vector2f resolution = { (float)intResolution.x, (float)intResolution.y };
+						
+							for (int i = 0; i &lt; someSprites.Size(); ++i)
 							{
-								Model& model = aRegistry.Get&lt;Model&gt;(entity);
-								Transform& transform = aRegistry.Get&lt;Transform&gt;(entity);
-								RenderModel(model, transform);
+								Entity e = someSprites.GetEntityByIndex(i);
+								if (!someTransforms.Contains(e))
+									continue;
+						
+								SpriteComponent& sprite = someSprites.Get(e);
+								TransformComponent& transform = someTransforms.Get(e);
+						
+								Tga::Sprite2DInstanceData instance;
+								instance.myPivot = { 0.5f, 0.5f };
+								instance.myPosition = transform.position*resolution;
+								instance.mySize = Tga::Vector2f{ 0.75f, 0.75f }*resolution.y;
+								instance.myColor = Tga::Color(1, 1, 1, 1);
+								
+								Tga::SpriteSharedData sharedData = {};
+								sharedData.myTexture = sprite.texture;
+						
+								spriteDrawer.Draw(sharedData, instance);
 							}
 						}
-
 					</code></pre>
+				</section>
+				<section>
+					<h4>Resultat 😍</h4>
+					<img src="media/Result.gif" alt="">
+				</section>
+				<section>
+					<h4>Med lite extra jobb</h4>
+						<div class="r-stack">
+							<pre class="fragment fade-out" data-fragment-index="0"><code data-trim data-noescape data-line-numbers="" style="font-size:0.7em">
+								void Render(Registry& aRegistry)
+								{
+									for (Entity entity : aRegistry.View&lt;SpriteComponent, Transform&gt;())
+									{
+										SpriteComponent& sprite = aRegistry.Get&lt;SpriteComponent&gt;(entity);
+										TransformComponent& transform = aRegistry.Get&lt;TransformComponent&gt;(entity);
+										RenderSprite(sprite, transform);
+									}
+								}
+							</code></pre>
+							<pre class="fragment current-visible" data-fragment-index="0"><code data-trim data-noescape data-line-numbers="" style="font-size:0.7em">
+								void Render(Registry& aRegistry)
+								{
+									for (auto&amp;&amp; [entity, sprite, transform] : 
+									aRegistry.View&lt;SpriteComponent, Transform&gt;().Each())
+									{
+										RenderSprite(sprite, transform);
+									}
+								}
+							</code></pre>
+						</div>
+					<a href="https://github.com/AdamWid/ecs">github/adamwid/ecs</a>
+				</section>
+				<section>
+					<h3>Frågor 🤔</h3>
 				</section>
 			</div>
 		</div>
