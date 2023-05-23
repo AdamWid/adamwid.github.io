@@ -45,7 +45,7 @@
 					</ul>
 				</section>
 				<section>
-					<img src="media/Hierarchies.jpg" alt="">
+					<img style="max-width: 50%;" src="media/Hierarchies.jpg" alt="">
 				</section>
 				<section>
 					<h3>Statisk komposition</h3>
@@ -78,7 +78,7 @@
 					<ul>
 						<li class="fragment">Används av spelmotorer som Unity</li>
 						<li class="fragment">Objekts komposition defineras i runtime av sina komponenter</li>
-						<li class="fragment">Lätt att göra data-drivna spel - Kan lätt definera objekt i JSON</li>
+						<li class="fragment">Lätt att göra integrerade editors och spara scener till fil</li>
 						<li class="fragment">Beteende implementeras med virtuella funktioner</li>
 						<li class="fragment">Fortfarande svårt att optimera för hög prestanda</li>
 					</ul>
@@ -94,10 +94,11 @@
 				</section>
 				<section>
 					<h4>Pseudokod</h4>
-					<pre><code data-trim data-noescape data-line-numbers="1-5|7-13|15-19|21-25|27-33">							
+					<pre><code data-trim data-noescape data-line-numbers="1-6|8-14|16-20|22-26|28-34">							
 						class Component
 						{
 						public:
+							virtual ~Component() {}
 							virtual void Update(GameObject* aOwner, float aDT) = 0;
 						};
 
@@ -133,9 +134,9 @@
 				<section>
 					<h3>Vad är ett entity component system?</h3>
 					<ul>
-						<li>En dynamisk beskrivning av objekt i spelvärlden</li>
-						<li>Arkitektur och designmönster</li>
-						<li>Dataorienterad design</li>
+						<li class="fragment">Likt ett gameObject-komponent system</li>
+						<li class="fragment">Dataorienterad design</li>
+						<li class="fragment">Logik separeras från komponenterna</li>
 					</ul>
 				</section>
 				<section>
@@ -144,16 +145,16 @@
 				<section>
 					<h3>Entititer</h3>
 					<ul>
-						<li>
+						<li class="fragment">
 							Entititer representerar ett individuellt objekt i världen.
 							De är byggstenarna av ett ecs, och agerar som en samling av komponenter.
 						</li>
-						<li>
-							Likt GameObjects i Unity ni är vana med, men i ett ECS är 
+						<li class="fragment">
+							Likt GameObjects ni är vana med, men i ett ECS är 
 							entiteter bara ett unikt id, oftast implementerat som en unsigned int.
 						</li>
-						<li>
-							Dessa entiteter används som en nyckel till en associativ container, 
+						<li class="fragment">
+							Entiteter används som en nyckel till en associativ container, 
 							som kopplar entiteten till en komponent.
 						</li>
 					</ul>
@@ -162,13 +163,15 @@
 				<section>
 					<h3>Komponenter</h3>
 					<ul>
-						<li>
+						<li class="fragment">Också likt komponenter i gameObject-komponent modellen</li>
+						<li class="fragment">Har ingen logik på sig, oftast bara en struct</li>
+						<li class="fragment">
 							Definerar beteende och egenskaper av en entitet.
 						</li>
-						<li>
+						<li class="fragment">
 							Är oberoende och enkapsulerade.
 						</li>
-						<li>
+						<li class="fragment">
 							Kan läggas till och tas bort från entiteter i runtime.
 						</li>
 					</ul>
@@ -176,11 +179,11 @@
 				<section>
 					<h3>System</h3>
 					<ul>
-						<li>
-							System har inget eget tillstånd, 
+						<li class="fragment">
+							System har inget eget state, 
 							det utför beteendet som defineras av en uppsättning komponenter
 						</li>
-						<li>
+						<li class="fragment">
 							Fokuserar på en specifik uppgift, 
 							ett system har ingen koppling till 
 							komponenter som inte berör den uppgiften.
