@@ -193,7 +193,8 @@
 				<section>
 					<h3>Flexibilitet 🤸</h3>
 					<ul>
-						<li>Enkapsulering</li>
+						<li class="fragment">Enkapsulering</li>
+						<li class="fragment">Lätt att lägga till och ta bort features</li>
 					</ul>
 				</section>
 				<section>
@@ -206,7 +207,12 @@
 								<li class="fragment">Iterering av komponenter kan göras linjärt</li>
 							</ul>
 						</li>
-						<li class="fragment">triviellt flertrådad arkitektur</li>
+						<li class="fragment">
+							triviellt flertrådad arkitektur
+							<ul>
+								<li class="fragment">Lätt att garantera trådsäkerhet i system</li>
+							</ul>
+						</li>
 					</ul>
 				</section>
 				<section>
@@ -307,38 +313,44 @@
 					ifall minne inte ligger alignat till en word-storlek, kommer cpun behöva läsa in den i 2 register, 
 					sen shifta ihop minnet till ett.
 				-->
-				<section>
+				<!-- <section>
 					<h3>Trådning</h3>
 					eftersom system bara kan modifiera komponenterna de arbetar på, så kan vi vara säkra på
 					att 2 trådar inte kommer hamna i ett race condition.
 					
 
 					<img src="media/DependencyGraph.png" alt="">
-				</section>
+				</section> -->
 				<section>
 					<h3>Kod</h3>
 				</section>
 				<section >
 					Entiteter
-					<pre><code data-trim data-noescape data-line-numbers="1-2|4-11|13-16">
+					<pre><code data-trim data-noescape data-line-numbers="1-2|7-14|16-19|21-22">
 						#define MAX_ENTITIES 1000
 						using Entity = uint32_t;
 
-						Entity Create()
+						class Registry
 						{
-							if (myFreeEntities.Size())
+						public:
+							Entity Create()
 							{
-								return myFreeEntities.Dequeue();
+								if (myFreeEntities.Size())
+								{
+									return myFreeEntities.Dequeue();
+								}
+								return myNext++;
 							}
-							return myNext++;
-						}
 
-						void Remove(Entity aEntity)
-						{
-							myFreeEntities.Enqueue(aEntity);
-						}
-						Entity myNext = 0;
-						CommonUtilities::Heap&lt;Entity&gt; myFreeEntities;
+							void Remove(Entity aEntity)
+							{
+								myFreeEntities.Enqueue(aEntity);
+							}
+						private:
+							Entity myNext = 0;
+							CommonUtilities::Heap&lt;Entity&gt; myFreeEntities;
+						}	
+						
 
 					</code></pre>
 				</section>
