@@ -14,23 +14,68 @@
 }
 
 body {
+    margin: 0;
     background-color: var(--bg-color);
     color: var(--text-color);
 }
 
-header {
+.header {
     position: fixed;
     width: 100%;
-    top: 0;
-    right: 0;
     z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: var(--second-bg-color);
-    padding: 22px 15%;
+    overflow: hidden;
+    background-color: var(--second-bg-color);
+    padding: 20px 10px;
     border-bottom: 1px solid transparent;
     transition: all .45s ease;
+}
+
+.header a {
+    float: left;
+    text-align: center;
+    padding: 12px;
+    text-decoration: none;
+    line-height: 25px;
+    border-radius: 4px;
+    color: var(--second-color);
+    font-size: 20px;
+    font-weight: 500;
+    margin: 0 5px;
+    transition: all .2s ease;
+}
+
+.header-right a:hover {
+    color: var(--main-color);
+}
+
+.header-right a.active {
+    color: var(--main-color);
+}
+
+.header a.logo {
+    font-size: 25px;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+.header-right {
+    float: right;
+}
+
+@media screen and (max-width: 600px) {
+    .header a {
+      float: none;
+      display: block;
+      text-align: left;
+    }
+    
+    .header-right {
+      float: none;
+    }
+
+    .header {
+        position: relative;
+    }
 }
 
 .colored {
@@ -77,26 +122,6 @@ hr {
     letter-spacing: 1px;
 }
 
-.navlist {
-    list-style: none;
-    display: flex;
-}
-
-.navlist a {
-    color: var(--second-color);
-    font-size: 20px;
-    font-weight: 500;
-    margin: 0 5px;
-    transition: all .2s ease;
-}
-
-.navlist a:hover {
-    color: var(--main-color);
-}
-
-.navlist a.active {
-    color: var(--main-color);
-}
 
 #menu-icon {
     font-size: 35px;
@@ -127,8 +152,6 @@ section {
     gap: 2.5rem;
     margin-top: 5rem;
 }
-
-
 
 .language-cpp {
     width: auto;
